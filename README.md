@@ -353,7 +353,6 @@ Este projeto está licenciado sob a Licença MIT - veja o arquivo [LICENSE](LICE
 - **Issues** - Reporte bugs e solicite features
 - **Discussions** - Tire dúvidas e compartilhe ideias
 - **Wiki** - Documentação detalhada
-- **Email** - contato@eventsync.com
 
 ### **Recursos Úteis**
 - [Documentação Next.js](https://nextjs.org/docs)
@@ -391,6 +390,3 @@ Este projeto está licenciado sob a Licença MIT - veja o arquivo [LICENSE](LICE
 
 ---
 
-**Desenvolvido pela equipe EventSync**
-
-*Transformando a gestão de eventos com tecnologia moderna e inovação.*
