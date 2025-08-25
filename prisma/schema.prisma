@@ -1,0 +1,275 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String
+  password      String
+  role          UserRole  @default(ORGANIZER)
+  avatar        String?
+  phone         String?
+  company       String?
+  bio           String?
+  isVerified    Boolean   @default(false)
+  emailVerified DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relacionamentos
+  organizedEvents Event[]      @relation("EventOrganizer")
+  registrations   Registration[]
+  notifications   Notification[]
+  payments       Payment[]
+
+  @@map("users")
+}
+
+model Event {
+  id              String        @id @default(cuid())
+  title           String
+  description     String
+  shortDescription String?
+  category        EventCategory
+  status          EventStatus   @default(DRAFT)
+  startDate       DateTime
+  endDate         DateTime
+  location        String
+  address         String?
+  city            String?
+  state           String?
+  country         String?
+  coordinates     Json? // {lat: number, lng: number}
+  capacity        Int
+  currentRegistrations Int      @default(0)
+  price           Decimal       @default(0)
+  currency        String        @default("BRL")
+  imageUrl        String?
+  bannerUrl       String?
+  requirements    String?
+  contactEmail    String?
+  contactPhone    String?
+  website         String?
+  tags            String[]
+  isPublic        Boolean       @default(true)
+  allowWaitlist   Boolean       @default(true)
+  maxWaitlist     Int?
+  googleCalendarId String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  // Relacionamentos
+  organizerId     String
+  organizer       User          @relation("EventOrganizer", fields: [organizerId], references: [id])
+  registrations   Registration[]
+  sessions        Session[]
+  sponsors        Sponsor[]
+  media           Media[]
+
+  @@map("events")
+}
+
+model Session {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  startTime   DateTime
+  endTime     DateTime
+  speaker     String?
+  room        String?
+  capacity    Int?
+  eventId     String
+  event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("sessions")
+}
+
+model Registration {
+  id            String           @id @default(cuid())
+  status        RegistrationStatus @default(PENDING)
+  ticketType    String?
+  price         Decimal?
+  currency      String           @default("BRL")
+  notes         String?
+  checkInTime   DateTime?
+  checkOutTime  DateTime?
+  qrCode        String           @unique
+  waitlistPosition Int?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  // Relacionamentos
+  userId        String
+  user          User             @relation(fields: [userId], references: [id])
+  eventId       String
+  event         Event            @relation(fields: [eventId], references: [id])
+  payment       Payment?
+  sessions      SessionRegistration[]
+
+  @@map("registrations")
+}
+
+model SessionRegistration {
+  id           String     @id @default(cuid())
+  registrationId String
+  registration Registration @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+  sessionId    String
+  session      Session    @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  createdAt    DateTime   @default(now())
+
+  @@unique([registrationId, sessionId])
+  @@map("session_registrations")
+}
+
+model Payment {
+  id            String        @id @default(cuid())
+  amount        Decimal
+  currency      String        @default("BRL")
+  status        PaymentStatus @default(PENDING)
+  method        PaymentMethod
+  stripePaymentId String?
+  description   String?
+  metadata      Json?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  // Relacionamentos
+  userId        String
+  user          User          @relation(fields: [userId], references: [id])
+  registrationId String       @unique
+  registration  Registration  @relation(fields: [registrationId], references: [id])
+
+  @@map("payments")
+}
+
+model Sponsor {
+  id          String   @id @default(cuid())
+  name        String
+  logo        String?
+  website     String?
+  description String?
+  tier        SponsorTier
+  eventId     String
+  event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("sponsors")
+}
+
+model Media {
+  id        String   @id @default(cuid())
+  type      MediaType
+  url       String
+  alt       String?
+  caption   String?
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@map("media")
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  type      NotificationType
+  title     String
+  message   String
+  isRead    Boolean          @default(false)
+  data      Json?
+  userId    String
+  user      User             @relation(fields: [userId], references: [id])
+  createdAt DateTime         @default(now())
+
+  @@map("notifications")
+}
+
+// Enums
+enum UserRole {
+  ADMIN
+  ORGANIZER
+  ATTENDEE
+}
+
+enum EventCategory {
+  CONFERENCE
+  WORKSHOP
+  SEMINAR
+  WEBINAR
+  MEETUP
+  HACKATHON
+  EXHIBITION
+  CONCERT
+  SPORTS
+  OTHER
+}
+
+enum EventStatus {
+  DRAFT
+  PUBLISHED
+  ACTIVE
+  CANCELLED
+  COMPLETED
+}
+
+enum RegistrationStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  WAITLISTED
+  CHECKED_IN
+  CHECKED_OUT
+}
+
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  REFUNDED
+  CANCELLED
+}
+
+enum PaymentMethod {
+  CREDIT_CARD
+  DEBIT_CARD
+  PIX
+  BANK_TRANSFER
+  CASH
+  OTHER
+}
+
+enum SponsorTier {
+  PLATINUM
+  GOLD
+  SILVER
+  BRONZE
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+  DOCUMENT
+  AUDIO
+}
+
+enum NotificationType {
+  REGISTRATION_CONFIRMED
+  EVENT_REMINDER
+  PAYMENT_SUCCESS
+  PAYMENT_FAILED
+  EVENT_UPDATED
+  EVENT_CANCELLED
+  GENERAL
+}

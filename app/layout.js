@@ -1,0 +1,22 @@
+import './globals.css'
+import { Inter } from 'next/font/google'
+import AuthProvider from './components/AuthProvider'
+
+const inter = Inter({ subsets: ['latin'] })
+
+export const metadata = {
+  title: 'EventSync - Gerenciamento de Eventos',
+  description: 'Sistema completo para gerenciamento de eventos, inscrições e check-ins',
+}
+
+export default function RootLayout({ children }) {
+  return (
+    <html lang="pt-BR">
+      <body className={inter.className}>
+        <AuthProvider>
+          {children}
+        </AuthProvider>
+      </body>
+    </html>
+  )
+}
