@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  # Aplicação EventSync
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://eventsync:eventsync@db:5432/eventsync?schema=public
+      - NEXTAUTH_SECRET=your-secret-key-here
+      - NEXTAUTH_URL=http://localhost:3000
+    depends_on:
+      - db
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+    networks:
+      - eventsync-network
+
+  # Banco de dados PostgreSQL
+  db:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_DB=eventsync
+      - POSTGRES_USER=eventsync
+      - POSTGRES_PASSWORD=eventsync
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - eventsync-network
+
+  # Redis para cache (opcional)
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - eventsync-network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  eventsync-network:
+    driver: bridge

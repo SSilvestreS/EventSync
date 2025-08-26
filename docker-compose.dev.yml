@@ -1,0 +1,75 @@
+version: '3.8'
+
+services:
+  # Aplicação EventSync (desenvolvimento)
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://eventsync:eventsync@db:5432/eventsync?schema=public
+      - NEXTAUTH_SECRET=dev-secret-key-123
+      - NEXTAUTH_URL=http://localhost:3000
+      - STRIPE_PUBLIC_KEY=pk_test_placeholder
+      - STRIPE_SECRET_KEY=sk_test_placeholder
+    depends_on:
+      - db
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+    networks:
+      - eventsync-dev-network
+    stdin_open: true
+    tty: true
+
+  # Banco de dados PostgreSQL
+  db:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_DB=eventsync
+      - POSTGRES_USER=eventsync
+      - POSTGRES_PASSWORD=eventsync
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+    networks:
+      - eventsync-dev-network
+
+  # Redis para cache
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_dev_data:/data
+    networks:
+      - eventsync-dev-network
+
+  # Prisma Studio (opcional)
+  prisma-studio:
+    image: node:18-alpine
+    working_dir: /app
+    ports:
+      - "5555:5555"
+    environment:
+      - DATABASE_URL=postgresql://eventsync:eventsync@db:5432/eventsync?schema=public
+    volumes:
+      - .:/app
+    networks:
+      - eventsync-dev-network
+    command: npx prisma studio --hostname 0.0.0.0 --port 5555
+    depends_on:
+      - db
+
+volumes:
+  postgres_dev_data:
+  redis_dev_data:
+
+networks:
+  eventsync-dev-network:
+    driver: bridge

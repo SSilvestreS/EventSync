@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Eye, EyeOff, LogIn, Calendar, Users, QrCode, CreditCard } from 'lucide-react';
+import { Eye, EyeOff, LogIn, Calendar, Users, QrCode, CreditCard, Menu, X } from 'lucide-react';
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({
@@ -12,6 +12,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const router = useRouter();
 
   const handleSubmit = async (e) => {
@@ -23,11 +24,11 @@ export default function LoginPage() {
       // Simular login (em produção, usar NextAuth)
       if (formData.email === 'admin@eventsync.com' && formData.password === 'admin123') {
         // Redirecionar para dashboard
-        router.push('/admin/dashboard');
+        router.push('/dashboard');
       } else if (formData.email === 'organizador@eventsync.com' && formData.password === 'organizador123') {
-        router.push('/admin/dashboard');
+        router.push('/dashboard');
       } else if (formData.email === 'participante@eventsync.com' && formData.password === 'participante123') {
-        router.push('/admin/dashboard');
+        router.push('/dashboard');
       } else {
         setError('Credenciais inválidas');
       }
@@ -53,9 +54,9 @@ export default function LoginPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex flex-col lg:flex-row">
       {/* Left Side - Features */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-blue-600 to-purple-700 text-white p-12 flex-col justify-center">
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-blue-600 to-purple-700 text-white p-8 lg:p-12 flex-col justify-center">
         <div className="max-w-md">
           <div className="flex items-center space-x-3 mb-8">
             <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
@@ -90,38 +91,38 @@ export default function LoginPage() {
       </div>
 
       {/* Right Side - Login Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-4 sm:p-6 lg:p-8">
         <div className="w-full max-w-md">
           {/* Mobile Logo */}
-          <div className="lg:hidden text-center mb-8">
+          <div className="lg:hidden text-center mb-6 sm:mb-8">
             <div className="flex items-center justify-center space-x-3 mb-4">
-              <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
-                <Calendar className="w-7 h-7 text-white" />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
+                <Calendar className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
               </div>
-              <span className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              <span className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                 EventSync
               </span>
             </div>
           </div>
 
-          <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/20 p-8">
-            <div className="text-center mb-8">
-              <h2 className="text-3xl font-bold text-gray-900 mb-2">
+          <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/20 p-6 sm:p-8">
+            <div className="text-center mb-6 sm:mb-8">
+              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
                 Bem-vindo de volta
               </h2>
-              <p className="text-gray-600">
+              <p className="text-gray-600 text-sm sm:text-base">
                 Faça login para acessar sua conta
               </p>
               <div className="mt-2">
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                <span className="inline-flex items-center px-2 sm:px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                   Versão 1.3 - Sistemas Avançados
                 </span>
               </div>
             </div>
 
-            <form className="space-y-6" onSubmit={handleSubmit}>
+            <form className="space-y-4 sm:space-y-6" onSubmit={handleSubmit}>
               {error && (
-                <div className="bg-red-50 border border-red-200 rounded-xl p-4 animate-shake">
+                <div className="bg-red-50 border border-red-200 rounded-xl p-3 sm:p-4 animate-shake">
                   <p className="text-sm text-red-600 text-center">{error}</p>
                 </div>
               )}
@@ -139,7 +140,7 @@ export default function LoginPage() {
                     required
                     value={formData.email}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-gray-900"
+                    className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-xl placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-gray-900 text-sm sm:text-base"
                     placeholder="seu@email.com"
                   />
                   <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
@@ -161,7 +162,7 @@ export default function LoginPage() {
                     required
                     value={formData.password}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-gray-900"
+                    className="w-full px-3 sm:px-4 py-2 sm:py-3 pr-12 border border-gray-300 rounded-xl placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-gray-900 text-sm sm:text-base"
                     placeholder="••••••••"
                   />
                   <button
@@ -170,9 +171,9 @@ export default function LoginPage() {
                     onClick={() => setShowPassword(!showPassword)}
                   >
                     {showPassword ? (
-                      <EyeOff className="h-5 w-5" />
+                      <EyeOff className="h-4 w-4 sm:h-5 sm:w-5" />
                     ) : (
-                      <Eye className="h-5 w-5" />
+                      <Eye className="h-4 w-4 sm:h-5 sm:w-5" />
                     )}
                   </button>
                 </div>
@@ -182,16 +183,16 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 px-4 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-2 sm:py-3 px-4 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                 >
                   {loading ? (
                     <div className="flex items-center justify-center">
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                      <div className="animate-spin rounded-full h-4 w-4 sm:h-5 sm:w-5 border-b-2 border-white mr-2"></div>
                       Entrando...
                     </div>
                   ) : (
                     <div className="flex items-center justify-center">
-                      <LogIn className="w-5 h-5 mr-2" />
+                      <LogIn className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                       Entrar
                     </div>
                   )}
@@ -200,7 +201,7 @@ export default function LoginPage() {
             </form>
 
             {/* Credenciais de Teste */}
-            <div className="mt-8">
+            <div className="mt-6 sm:mt-8">
               <div className="relative">
                 <div className="absolute inset-0 flex items-center">
                   <div className="w-full border-t border-gray-200" />
@@ -210,8 +211,8 @@ export default function LoginPage() {
                 </div>
               </div>
 
-              <div className="mt-6 space-y-3">
-                <div className="bg-gray-50 rounded-lg p-3">
+              <div className="mt-4 sm:mt-6 space-y-2 sm:space-y-3">
+                <div className="bg-gray-50 rounded-lg p-2 sm:p-3">
                   <div className="text-xs text-gray-600 mb-1">
                     <strong className="text-blue-600">Admin:</strong>
                   </div>
@@ -219,7 +220,7 @@ export default function LoginPage() {
                     admin@eventsync.com / admin123
                   </div>
                 </div>
-                <div className="bg-gray-50 rounded-lg p-3">
+                <div className="bg-gray-50 rounded-lg p-2 sm:p-3">
                   <div className="text-xs text-gray-600 mb-1">
                     <strong className="text-green-600">Organizador:</strong>
                   </div>
@@ -227,7 +228,7 @@ export default function LoginPage() {
                     organizador@eventsync.com / organizador123
                   </div>
                 </div>
-                <div className="bg-gray-50 rounded-lg p-3">
+                <div className="bg-gray-50 rounded-lg p-2 sm:p-3">
                   <div className="text-xs text-gray-600 mb-1">
                     <strong className="text-purple-600">Participante:</strong>
                   </div>
@@ -239,7 +240,7 @@ export default function LoginPage() {
             </div>
 
             {/* Voltar para Home */}
-            <div className="mt-8 text-center">
+            <div className="mt-6 sm:mt-8 text-center">
               <button
                 onClick={() => router.push('/')}
                 className="text-blue-600 hover:text-blue-700 text-sm font-medium transition-colors"
