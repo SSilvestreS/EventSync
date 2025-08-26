@@ -81,80 +81,232 @@ O EventSync é uma plataforma completa para criação, gestão e análise de eve
 ## **Tecnologias Utilizadas**
 
 ### **Frontend**
-- **Next.js 14**: Framework React com App Router
-- **React 18**: Biblioteca de interface
-- **TypeScript**: Tipagem estática
-- **Tailwind CSS**: Framework CSS utility-first
-- **Lucide React**: Biblioteca de ícones
+- **Next.js 14**: Framework React com App Router, Server Components, e otimizações automáticas
+- **React 18**: Biblioteca de interface com Concurrent Features e Suspense
+- **TypeScript**: Tipagem estática para desenvolvimento mais seguro e produtivo
+- **Tailwind CSS**: Framework CSS utility-first com design system consistente
+- **Lucide React**: Biblioteca de ícones modernos e otimizados
+- **Framer Motion**: Animações e transições fluidas
+- **React Hook Form**: Gerenciamento avançado de formulários com validação
+- **Zustand**: Gerenciamento de estado global leve e performático
 
 ### **Backend**
-- **Node.js**: Runtime JavaScript
-- **Prisma**: ORM para banco de dados
-- **PostgreSQL**: Banco de dados principal
-- **Redis**: Cache e sessões
-- **NextAuth.js**: Autenticação e autorização
+- **Node.js**: Runtime JavaScript com suporte a ES modules e performance otimizada
+- **Prisma**: ORM moderno com type safety, migrations automáticas e Prisma Studio
+- **PostgreSQL**: Banco de dados relacional robusto com suporte a JSON e extensões
+- **Redis**: Cache em memória para sessões, rate limiting e otimizações
+- **NextAuth.js**: Sistema de autenticação completo com múltiplos providers
+- **bcryptjs**: Hash seguro de senhas com salt rounds configuráveis
+- **JWT**: Tokens de autenticação com refresh automático
+- **Nodemailer**: Serviço de email com templates HTML responsivos
+- **Multer**: Upload de arquivos com validação e processamento
+- **Sharp**: Processamento e otimização de imagens
 
 ### **Sistemas Avançados**
-- **Zod**: Validação de schemas
-- **Winston**: Sistema de logging
-- **Jest**: Framework de testes
-- **Web Push API**: Notificações push
-- **Service Worker**: Funcionalidades offline
+- **Zod**: Validação de schemas com type inference automático e mensagens customizáveis
+- **Winston**: Sistema de logging profissional com múltiplos transportes e rotação de arquivos
+- **Jest**: Framework de testes com cobertura, mocks e testes paralelos
+- **Web Push API**: Notificações push com VAPID e Service Worker
+- **Service Worker**: Funcionalidades offline, cache inteligente e PWA
+- **Rate Limiting**: Proteção contra abuso com Redis e configurações flexíveis
+- **CORS**: Configuração de segurança para APIs com origens permitidas
+- **Helmet**: Headers de segurança HTTP para proteção contra ataques
+- **Compression**: Compressão gzip/brotli para otimização de performance
+- **Morgan**: Logging de requisições HTTP com formatos customizáveis
 
 ### **Integrações**
-- **Stripe**: Processamento de pagamentos
-- **Google APIs**: Calendar e autenticação
-- **Mixpanel/PostHog/Amplitude**: Analytics
-- **HubSpot/Salesforce/Pipedrive**: CRM
-- **Zapier**: Automações
+- **Stripe**: Processamento de pagamentos com webhooks, refunds e múltiplas moedas
+- **Google APIs**: Calendar para sincronização de eventos e OAuth para autenticação
+- **Mixpanel/PostHog/Amplitude**: Analytics avançados com tracking de eventos e funnels
+- **HubSpot/Salesforce/Pipedrive**: Integração CRM com sincronização bidirecional
+- **Zapier**: Automações e workflows entre diferentes plataformas
+- **WhatsApp Business API**: Notificações via WhatsApp com templates aprovados
+- **SendGrid**: Serviço de email transacional com templates responsivos
+- **Cloudinary**: Gerenciamento de mídia com transformações automáticas
+- **Google Analytics**: Tracking de comportamento e conversões
+- **Facebook Pixel**: Retargeting e análise de campanhas publicitárias
 
 ### **DevOps e Infraestrutura**
-- **Docker**: Containerização
-- **Docker Compose**: Orquestração de serviços
-- **Git**: Controle de versão
-- **ESLint**: Linting de código
-- **Prettier**: Formatação de código
+- **Docker**: Containerização com multi-stage builds e otimizações de imagem
+- **Docker Compose**: Orquestração de serviços com volumes persistentes e networks
+- **Git**: Controle de versão com Git Flow e conventional commits
+- **ESLint**: Linting de código com regras customizadas para Next.js e TypeScript
+- **Prettier**: Formatação automática de código com configurações consistentes
+- **Husky**: Git hooks para validação automática antes de commits
+- **Lint-staged**: Linting apenas de arquivos modificados para performance
+- **GitHub Actions**: CI/CD com testes automáticos e deploy automatizado
+- **Vercel**: Deploy automático com preview deployments e analytics
+- **Netlify**: Deploy alternativo com funções serverless e forms
 
 ## **Estrutura do Projeto**
 
 ```
 EventSync/
-├── app/                          # Next.js App Router
-│   ├── api/                     # API routes
-│   ├── components/              # Componentes React
-│   │   ├── ui/                 # Componentes base (Button, Modal, Table, Card)
-│   │   └── forms/              # Componentes de formulário
-│   ├── hooks/                   # Hooks customizados (useApi, useApiWithCache)
-│   ├── lib/                     # Bibliotecas e serviços
-│   │   ├── config/             # Configuração centralizada
-│   │   ├── logger/             # Sistema de logging
-│   │   ├── middleware/         # Middleware avançado
-│   │   ├── validation/         # Validação com Zod
-│   │   ├── cache/              # Sistema de cache
-│   │   ├── monitoring/         # Monitoramento e métricas
-│   │   └── testing/            # Sistema de testes
-│   ├── types/                   # Tipos TypeScript
-│   ├── utils/                   # Utilitários centralizados
-│   └── constants/               # Constantes da aplicação
-├── prisma/                      # Schema e migrações do banco
-├── public/                      # Arquivos estáticos
-├── components/                  # Componentes globais
-├── lib/                         # Serviços e utilitários
-├── Dockerfile                   # Container de produção
-├── Dockerfile.dev               # Container de desenvolvimento
-├── docker-compose.yml           # Orquestração de produção
-├── docker-compose.dev.yml       # Orquestração de desenvolvimento
-└── README.md                    # Documentação do projeto
+├── app/                          # Next.js App Router (páginas e rotas)
+│   ├── api/                     # API routes com middleware e validação
+│   │   ├── auth/               # Autenticação e autorização
+│   │   ├── events/             # Gestão de eventos e sessões
+│   │   ├── registrations/      # Sistema de inscrições
+│   │   ├── payments/           # Processamento de pagamentos
+│   │   ├── analytics/          # Métricas e relatórios
+│   │   ├── crm/                # Integração com sistemas CRM
+│   │   ├── affiliates/         # Sistema de afiliados
+│   │   ├── notifications/      # Notificações push e email
+│   │   └── webhooks/           # Webhooks externos (Stripe, CRM)
+│   ├── components/              # Componentes React específicos da aplicação
+│   │   ├── ui/                 # Componentes base reutilizáveis
+│   │   │   ├── Button.tsx     # Botões com variantes e estados
+│   │   │   ├── Modal.tsx      # Modais responsivos e acessíveis
+│   │   │   ├── Table.tsx      # Tabelas com paginação e busca
+│   │   │   ├── Card.tsx       # Cards com header, content e footer
+│   │   │   ├── Form.tsx       # Formulários com validação Zod
+│   │   │   └── Input.tsx      # Campos de entrada padronizados
+│   │   ├── forms/              # Formulários específicos da aplicação
+│   │   ├── layout/             # Componentes de layout e navegação
+│   │   └── modals/             # Modais específicos da aplicação
+│   ├── hooks/                   # Hooks customizados para lógica reutilizável
+│   │   ├── useApi.ts           # Hook para chamadas de API com cache
+│   │   ├── useApiWithCache.ts  # Hook para API com cache inteligente
+│   │   ├── useAuth.ts          # Hook para gerenciamento de autenticação
+│   │   ├── useNotifications.ts # Hook para notificações push
+│   │   └── useLocalStorage.ts  # Hook para localStorage com sincronização
+│   ├── lib/                     # Bibliotecas e serviços da aplicação
+│   │   ├── config/             # Sistema de configuração centralizado
+│   │   │   ├── index.ts       # Configuração principal com validação Zod
+│   │   │   ├── database.ts    # Configurações de banco de dados
+│   │   │   ├── email.ts       # Configurações de email
+│   │   │   ├── stripe.ts      # Configurações do Stripe
+│   │   │   └── analytics.ts   # Configurações de analytics
+│   │   ├── logger/             # Sistema de logging profissional
+│   │   │   ├── index.ts       # Logger principal com Winston
+│   │   │   ├── transports.ts  # Transportes de log (console, file, remote)
+│   │   │   └── formatters.ts  # Formatadores de log customizados
+│   │   ├── middleware/         # Middleware avançado para API routes
+│   │   │   ├── index.ts       # Gerenciador de middleware
+│   │   │   ├── auth.ts        # Middleware de autenticação
+│   │   │   ├── validation.ts  # Middleware de validação
+│   │   │   ├── rateLimit.ts   # Middleware de rate limiting
+│   │   │   └── cors.ts        # Middleware de CORS
+│   │   ├── validation/         # Sistema de validação robusto
+│   │   │   ├── index.ts       # Validação principal com Zod
+│   │   │   ├── schemas/       # Schemas de validação organizados
+│   │   │   ├── events.ts      # Schemas para eventos
+│   │   │   ├── users.ts       # Schemas para usuários
+│   │   │   └── payments.ts    # Schemas para pagamentos
+│   │   ├── cache/              # Sistema de cache inteligente
+│   │   │   ├── index.ts       # Cache manager principal
+│   │   │   ├── redis.ts       # Cache Redis com fallback
+│   │   │   ├── memory.ts      # Cache em memória para desenvolvimento
+│   │   │   └── strategies.ts  # Estratégias de cache configuráveis
+│   │   ├── monitoring/         # Sistema de monitoramento e métricas
+│   │   │   ├── index.ts       # Monitor principal
+│   │   │   ├── metrics.ts     # Coleta de métricas
+│   │   │   ├── health.ts      # Health checks
+│   │   │   └── alerts.ts      # Sistema de alertas
+│   │   └── testing/            # Sistema de testes automatizados
+│   │       ├── index.ts       # Configuração de testes
+│   │       ├── setup.ts       # Setup de ambiente de teste
+│   │       ├── mocks.ts       # Mocks para testes
+│   │       └── helpers.ts     # Helpers para testes
+│   ├── types/                   # Tipos TypeScript da aplicação
+│   │   ├── index.ts           # Tipos principais exportados
+│   │   ├── api.ts             # Tipos para API routes
+│   │   ├── database.ts        # Tipos derivados do Prisma
+│   │   ├── components.ts      # Tipos para componentes
+│   │   └── utils.ts           # Tipos para utilitários
+│   ├── utils/                   # Utilitários centralizados da aplicação
+│   │   ├── index.ts           # Exportações principais
+│   │   ├── date.ts            # Utilitários para manipulação de datas
+│   │   ├── format.ts          # Utilitários de formatação
+│   │   ├── validation.ts      # Utilitários de validação
+│   │   ├── api.ts             # Utilitários para chamadas de API
+│   │   ├── storage.ts         # Utilitários para localStorage/sessionStorage
+│   │   ├── crypto.ts          # Utilitários de criptografia
+│   │   └── performance.ts     # Utilitários de performance
+│   ├── constants/               # Constantes da aplicação
+│   │   ├── index.ts           # Constantes principais
+│   │   ├── api.ts             # Constantes de API
+│   │   ├── routes.ts          # Constantes de rotas
+│   │   ├── messages.ts        # Mensagens de erro e sucesso
+│   │   └── limits.ts          # Limites e configurações
+│   ├── globals.css              # Estilos globais e variáveis CSS
+│   ├── layout.tsx              # Layout principal da aplicação
+│   ├── page.tsx                # Página inicial (landing page)
+│   ├── login/                  # Páginas de autenticação
+│   │   └── page.tsx           # Página de login
+│   ├── dashboard/              # Dashboard principal
+│   │   └── page.tsx           # Dashboard do usuário
+│   └── error.tsx               # Página de erro global
+├── prisma/                      # Schema e migrações do banco de dados
+│   ├── schema.prisma           # Schema principal do banco
+│   ├── migrations/             # Migrações do banco de dados
+│   ├── seed.ts                 # Script para popular banco com dados iniciais
+│   └── client.ts               # Cliente Prisma configurado
+├── public/                      # Arquivos estáticos públicos
+│   ├── images/                 # Imagens da aplicação
+│   ├── icons/                  # Ícones e favicons
+│   ├── fonts/                  # Fontes customizadas
+│   └── manifest.json           # Manifest para PWA
+├── components/                  # Componentes React globais
+│   ├── ui/                     # Componentes de interface reutilizáveis
+│   ├── forms/                  # Componentes de formulário
+│   ├── layout/                 # Componentes de layout
+│   └── modals/                 # Componentes de modal
+├── lib/                         # Serviços e utilitários globais
+│   ├── services/               # Serviços de negócio
+│   │   ├── googleCalendar.ts  # Integração com Google Calendar
+│   │   ├── emailService.ts    # Serviço de email
+│   │   ├── analyticsService.ts # Serviço de analytics
+│   │   ├── crmService.ts      # Serviço de CRM
+│   │   ├── affiliateService.ts # Serviço de afiliados
+│   │   ├── i18nService.ts     # Serviço de internacionalização
+│   │   ├── notificationService.ts # Serviço de notificações
+│   │   └── paymentService.ts  # Serviço de pagamentos
+│   ├── utils/                  # Utilitários organizados por categoria
+│   │   ├── dateUtils.ts       # Utilitários de data e hora
+│   │   ├── validationUtils.ts # Utilitários de validação
+│   │   ├── formatUtils.ts     # Utilitários de formatação
+│   │   ├── arrayUtils.ts      # Utilitários para arrays
+│   │   ├── objectUtils.ts     # Utilitários para objetos
+│   │   ├── stringUtils.ts     # Utilitários para strings
+│   │   ├── urlUtils.ts        # Utilitários para URLs
+│   │   ├── storageUtils.ts    # Utilitários para localStorage
+│   │   └── performanceUtils.ts # Utilitários de performance
+│   ├── constants/              # Constantes centralizadas
+│   ├── types/                  # Tipos TypeScript globais
+│   ├── middleware/             # Middlewares personalizados
+│   ├── config.js               # Configurações centralizadas
+│   ├── prisma.js               # Cliente Prisma configurado
+│   ├── emailTemplates.js       # Templates de email
+│   ├── notificationConfig.js   # Configurações de notificação
+│   └── config.js               # Configurações centrais
+├── Dockerfile                   # Container de produção otimizado
+├── Dockerfile.dev               # Container de desenvolvimento com hot reload
+├── docker-compose.yml           # Orquestração de serviços de produção
+├── docker-compose.dev.yml       # Orquestração de serviços de desenvolvimento
+├── .dockerignore                # Arquivos ignorados pelo Docker
+├── next.config.js               # Configuração do Next.js
+├── tailwind.config.js           # Configuração do Tailwind CSS
+├── tsconfig.json                # Configuração do TypeScript
+├── package.json                 # Dependências e scripts do projeto
+├── .gitignore                   # Arquivos ignorados pelo Git
+├── .env.local                   # Variáveis de ambiente locais
+├── .env.example                 # Exemplo de variáveis de ambiente
+└── README.md                    # Documentação completa do projeto
 ```
 
 ## **Scripts Disponíveis**
 
 ### **Desenvolvimento**
 ```bash
-npm run dev              # Iniciar servidor de desenvolvimento
-npm run build            # Construir aplicação para produção
+npm run dev              # Iniciar servidor de desenvolvimento com hot reload
+npm run build            # Construir aplicação para produção com otimizações
 npm run start            # Iniciar servidor de produção
-npm run lint             # Executar linting
+npm run lint             # Executar linting com ESLint
+npm run lint:fix         # Corrigir automaticamente problemas de linting
+npm run type-check       # Verificar tipos TypeScript
+npm run format           # Formatar código com Prettier
+npm run format:check     # Verificar formatação do código
 ```
 
 ### **Banco de Dados**
@@ -195,12 +347,16 @@ npm run test:e2e         # Executar testes end-to-end
 ## **Banco de Dados**
 
 ### **Modelos Principais**
-- **User**: Usuários com perfis e permissões
-- **Event**: Eventos com detalhes e configurações
-- **Registration**: Inscrições de participantes
-- **Coupon**: Sistema de cupons e descontos
-- **Payment**: Transações e pagamentos
-- **Notification**: Sistema de notificações
+- **User**: Usuários com perfis, permissões, preferências e histórico
+- **Event**: Eventos com detalhes, configurações, sessões e categorias
+- **Registration**: Inscrições de participantes com status e histórico
+- **Coupon**: Sistema de cupons e descontos com regras de aplicação
+- **Payment**: Transações e pagamentos com histórico completo
+- **Notification**: Sistema de notificações com templates e preferências
+- **Session**: Sessões e palestras dos eventos com horários
+- **Sponsor**: Patrocinadores dos eventos com níveis de patrocínio
+- **Media**: Arquivos e imagens com otimização automática
+- **Category**: Categorias de eventos para organização
 
 ### **Modelos Avançados (v1.2+)**
 - **UserAnalytics**: Dados de comportamento do usuário
@@ -226,11 +382,20 @@ npm run test:e2e         # Executar testes end-to-end
 ## **Responsividade e Design**
 
 ### **Breakpoints Implementados**
-- **Mobile First**: Design começa para telas pequenas
+- **Mobile First**: Design começa para telas pequenas (320px+)
 - **sm (640px+)**: Tablets pequenos e celulares grandes
 - **md (768px+)**: Tablets e dispositivos médios
 - **lg (1024px+)**: Desktops e laptops
 - **xl (1280px+)**: Telas grandes e monitores
+- **2xl (1536px+)**: Monitores ultra-wide e telas grandes
+
+### **Estratégias de Responsividade**
+- **Flexbox e Grid**: Layouts flexíveis que se adaptam automaticamente
+- **Container Queries**: Adaptação baseada no tamanho do container
+- **CSS Custom Properties**: Variáveis CSS para valores responsivos
+- **Viewport Units**: Uso de vw, vh, vmin e vmax para dimensões
+- **Media Queries**: Breakpoints específicos para diferentes dispositivos
+- **Touch-friendly**: Elementos otimizados para dispositivos touch
 
 ### **Recursos Responsivos**
 - **Menu hambúrguer** funcional para mobile
@@ -315,9 +480,12 @@ npm run docker:prod:down
 ## **Testes e Qualidade**
 
 ### **Framework de Testes**
-- **Jest**: Testes unitários e de integração
-- **React Testing Library**: Testes de componentes
-- **Playwright**: Testes end-to-end
+- **Jest**: Testes unitários e de integração com configuração avançada
+- **React Testing Library**: Testes de componentes com foco em comportamento
+- **Playwright**: Testes end-to-end com suporte a múltiplos navegadores
+- **MSW (Mock Service Worker)**: Mocking de APIs para testes isolados
+- **Testing Library Jest DOM**: Matchers customizados para DOM
+- **Jest Environment JSDOM**: Ambiente DOM para testes de componentes
 
 ### **Cobertura de Testes**
 - ✅ **Testes unitários** para utilitários
@@ -328,10 +496,12 @@ npm run docker:prod:down
 ## **Monitoramento e Performance**
 
 ### **Métricas Coletadas**
-- **Performance**: Tempo de resposta e throughput
-- **Erros**: Taxa de erro e stack traces
-- **Negócio**: Conversões e engajamento
-- **Sistema**: Uso de recursos e saúde
+- **Performance**: Tempo de resposta, throughput, Core Web Vitals e FCP/LCP
+- **Erros**: Taxa de erro, stack traces, tipos de erro e contexto
+- **Negócio**: Conversões, engajamento, funnels e KPIs específicos
+- **Sistema**: Uso de recursos, saúde da aplicação e dependências
+- **Usuário**: Comportamento, jornada e pontos de fricção
+- **Infraestrutura**: Uso de CPU, memória, disco e rede
 
 ### **Alertas e Notificações**
 - **Críticos**: Falhas de sistema
@@ -341,10 +511,12 @@ npm run docker:prod:down
 ## **Roadmap e Próximas Versões**
 
 ### **Versão 1.4 - Automação e IA**
-- **Chatbot inteligente** para suporte ao usuário
-- **Análise preditiva** de eventos
-- **Recomendações personalizadas** para usuários
-- **Automação de workflows** com Zapier
+- **Chatbot inteligente** para suporte ao usuário com NLP avançado
+- **Análise preditiva** de eventos usando machine learning
+- **Recomendações personalizadas** para usuários baseadas em comportamento
+- **Automação de workflows** com Zapier e integrações avançadas
+- **Processamento de linguagem natural** para análise de feedback
+- **Detecção de anomalias** em padrões de uso e comportamento
 
 ### **Versão 1.5 - Colaboração e Comunidade**
 - **Sistema de equipes** para organizadores
@@ -378,19 +550,7 @@ npm run docker:prod:down
 
 Este projeto está licenciado sob a Licença MIT - veja o arquivo [LICENSE](LICENSE) para detalhes.
 
-## **Suporte**
 
-### **Canais de Suporte**
-- **Email**: suporte@eventsync.com
-- **Discord**: [EventSync Community](https://discord.gg/eventsync)
-- **Documentação**: [docs.eventsync.com](https://docs.eventsync.com)
-- **Issues**: [GitHub Issues](https://github.com/eventsync/eventsync/issues)
-
-### **Recursos Úteis**
-- **Quick Start**: [Guia de Início Rápido](https://docs.eventsync.com/quickstart)
-- **Vídeos**: [Tutoriais em Vídeo](https://youtube.com/eventsync)
-- **Blog**: [EventSync Blog](https://blog.eventsync.com)
-- **FAQ**: [Perguntas Frequentes](https://docs.eventsync.com/faq)
 
 ---
 
