@@ -382,23 +382,18 @@ npm run test:e2e         # Executar testes end-to-end
 ## **Capturas de Tela da Aplicação**
 
 ### **Interface Principal**
-- **Landing Page**: [Visualizar Captura](https://ibb.co/d0LP7Tt7) - Página inicial responsiva com design moderno
-- **Login Page**: [Visualizar Captura](https://ibb.co/fdtD3w8H) - Sistema de autenticação elegante e funcional
-- **Dashboard**: [Visualizar Captura](https://ibb.co/WWtgB0SC) - Painel principal com métricas e funcionalidades
 
-### **Características Visuais**
-- **Design System**: Interface consistente com componentes reutilizáveis
-- **Paleta de Cores**: Esquema de cores profissional e acessível
-- **Tipografia**: Hierarquia visual clara com fontes otimizadas
-- **Ícones**: Biblioteca de ícones modernos e semânticos
-- **Animações**: Transições suaves e micro-interações
+#### **Landing Page**
+![Landing Page - EventSync](https://ibb.co/d0LP7Tt7)
+*Página inicial responsiva com design moderno*
 
-## **Capturas de Tela da Aplicação**
+#### **Login Page**
+![Login Page - EventSync](https://ibb.co/fdtD3w8H)
+*Sistema de autenticação elegante e funcional*
 
-### **Interface Principal**
-- **Landing Page**: [Visualizar Captura](https://ibb.co/d0LP7Tt7) - Página inicial responsiva com design moderno
-- **Login Page**: [Visualizar Captura](https://ibb.co/fdtD3w8H) - Sistema de autenticação elegante e funcional
-- **Dashboard**: [Visualizar Captura](https://ibb.co/WWtgB0SC) - Painel principal com métricas e funcionalidades
+#### **Dashboard**
+![Dashboard - EventSync](https://ibb.co/WWtgB0SC)
+*Painel principal com métricas e funcionalidades*
 
 ### **Características Visuais**
 - **Design System**: Interface consistente com componentes reutilizáveis
