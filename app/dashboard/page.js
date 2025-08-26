@@ -1,152 +1,296 @@
 'use client';
 
-import { useState } from 'react';
-import DashboardHeader from '../../components/dashboard/DashboardHeader';
-import MetricsOverview from '../../components/dashboard/MetricsOverview';
-import EventList from '../../components/dashboard/EventList';
-import RecentRegistrations from '../../components/dashboard/RecentRegistrations';
-import QuickActions from '../../components/dashboard/QuickActions';
+import { useState, useEffect } from 'react';
+import { 
+  Calendar, 
+  Users, 
+  QrCode, 
+  CreditCard, 
+  BarChart3, 
+  Settings, 
+  Bell, 
+  Search,
+  Plus,
+  TrendingUp,
+  TrendingDown,
+  Eye,
+  Download,
+  Filter,
+  MoreVertical
+} from 'lucide-react';
 
-export default function Dashboard() {
-  const [activeTab, setActiveTab] = useState('overview');
+export default function DashboardPage() {
+  const [stats, setStats] = useState({
+    totalEvents: 24,
+    activeEvents: 8,
+    totalParticipants: 1247,
+    totalRevenue: 45680
+  });
 
-  const metrics = {
-    totalEvents: 12,
-    totalRegistrations: 847,
-    totalRevenue: 15420.50,
-    averageAttendance: 78.5,
-    thisMonth: {
-      events: 3,
-      registrations: 156,
-      revenue: 3200.00
-    }
-  };
-
-  const events = [
+  const [recentEvents, setRecentEvents] = useState([
     {
       id: 1,
-      title: 'Workshop de Desenvolvimento Web',
-      date: '2024-02-15',
-      registrations: 35,
-      capacity: 50,
-      status: 'active'
+      name: 'Conferência de Tecnologia 2024',
+      date: '2024-03-15',
+      participants: 156,
+      status: 'active',
+      revenue: 15600
     },
     {
       id: 2,
-      title: 'Palestra sobre IA',
-      date: '2024-02-20',
-      registrations: 78,
-      capacity: 100,
-      status: 'active'
+      name: 'Workshop de Marketing Digital',
+      date: '2024-03-20',
+      participants: 89,
+      status: 'upcoming',
+      revenue: 8900
     },
     {
       id: 3,
-      title: 'Workshop de Marketing',
-      date: '2024-02-25',
-      registrations: 25,
-      capacity: 30,
-      status: 'active'
+      name: 'Seminário de Inovação',
+      date: '2024-03-25',
+      participants: 234,
+      status: 'upcoming',
+      revenue: 23400
     }
-  ];
+  ]);
 
-  const recentRegistrations = [
-    {
-      id: 1,
-      name: 'João Silva',
-      email: 'joao@email.com',
-      event: 'Workshop de Desenvolvimento Web',
-      date: '2024-02-10',
-      status: 'confirmed'
-    },
-    {
-      id: 2,
-      name: 'Maria Santos',
-      email: 'maria@email.com',
-      event: 'Palestra sobre IA',
-      date: '2024-02-09',
-      status: 'confirmed'
-    },
-    {
-      id: 3,
-      name: 'Pedro Costa',
-      email: 'pedro@email.com',
-      event: 'Workshop de Marketing',
-      date: '2024-02-08',
-      status: 'pending'
-    }
-  ];
+  const [quickActions] = useState([
+    { icon: Plus, label: 'Criar Evento', color: 'blue', action: () => console.log('Criar evento') },
+    { icon: Users, label: 'Gerenciar Participantes', color: 'green', action: () => console.log('Gerenciar participantes') },
+    { icon: QrCode, label: 'Gerar QR Codes', color: 'purple', action: () => console.log('Gerar QR codes') },
+    { icon: BarChart3, label: 'Ver Relatórios', color: 'orange', action: () => console.log('Ver relatórios') }
+  ]);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <DashboardHeader />
-      
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Tabs de Navegação */}
-        <div className="border-b border-gray-200 mb-8">
-          <nav className="-mb-px flex space-x-8">
-            {[
-              { id: 'overview', label: 'Visão Geral' },
-              { id: 'events', label: 'Eventos' },
-              { id: 'registrations', label: 'Inscrições' },
-              { id: 'analytics', label: 'Analytics' },
-              { id: 'settings', label: 'Configurações' }
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === tab.id
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </nav>
-        </div>
-
-        {/* Conteúdo Principal */}
-        {activeTab === 'overview' && (
-          <div className="space-y-8">
-            <MetricsOverview metrics={metrics} />
-            
-            <div className="grid lg:grid-cols-2 gap-8">
-              <EventList events={events} />
-              <RecentRegistrations registrations={recentRegistrations} />
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50">
+      {/* Header */}
+      <header className="bg-white shadow-sm border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-4">
+            <div className="flex items-center space-x-4">
+              <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+                <Calendar className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+                <p className="text-sm text-gray-600">Bem-vindo ao EventSync</p>
+              </div>
             </div>
             
-            <QuickActions />
+            <div className="flex items-center space-x-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <input
+                  type="text"
+                  placeholder="Buscar eventos, participantes..."
+                  className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-64"
+                />
+              </div>
+              
+              <button className="relative p-2 text-gray-600 hover:text-gray-900 transition-colors">
+                <Bell className="w-6 h-6" />
+                <span className="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full"></span>
+              </button>
+              
+              <button className="relative p-2 text-gray-600 hover:text-gray-900 transition-colors">
+                <Settings className="w-6 h-6" />
+              </button>
+              
+              <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold">
+                A
+              </div>
+            </div>
           </div>
-        )}
+        </div>
+      </header>
 
-        {activeTab === 'events' && (
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Gerenciar Eventos</h2>
-            <p className="text-gray-600">Funcionalidade de gerenciamento de eventos será implementada aqui.</p>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="bg-white rounded-2xl shadow-soft p-6 border border-gray-100 hover:shadow-medium transition-all duration-300">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Total de Eventos</p>
+                <p className="text-3xl font-bold text-gray-900">{stats.totalEvents}</p>
+              </div>
+              <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                <Calendar className="w-6 h-6 text-blue-600" />
+              </div>
+            </div>
+            <div className="mt-4 flex items-center text-sm">
+              <TrendingUp className="w-4 h-4 text-green-500 mr-1" />
+              <span className="text-green-600">+12%</span>
+              <span className="text-gray-500 ml-1">vs mês passado</span>
+            </div>
           </div>
-        )}
 
-        {activeTab === 'registrations' && (
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Gerenciar Inscrições</h2>
-            <p className="text-gray-600">Funcionalidade de gerenciamento de inscrições será implementada aqui.</p>
+          <div className="bg-white rounded-2xl shadow-soft p-6 border border-gray-100 hover:shadow-medium transition-all duration-300">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Eventos Ativos</p>
+                <p className="text-3xl font-bold text-gray-900">{stats.activeEvents}</p>
+              </div>
+              <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+                <QrCode className="w-6 h-6 text-green-600" />
+              </div>
+            </div>
+            <div className="mt-4 flex items-center text-sm">
+              <TrendingUp className="w-4 h-4 text-green-500 mr-1" />
+              <span className="text-green-600">+8%</span>
+              <span className="text-gray-500 ml-1">vs mês passado</span>
+            </div>
           </div>
-        )}
 
-        {activeTab === 'analytics' && (
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Analytics e Relatórios</h2>
-            <p className="text-gray-600">Funcionalidade de analytics será implementada aqui.</p>
+          <div className="bg-white rounded-2xl shadow-soft p-6 border border-gray-100 hover:shadow-medium transition-all duration-300">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Participantes</p>
+                <p className="text-3xl font-bold text-gray-900">{stats.totalParticipants.toLocaleString()}</p>
+              </div>
+              <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+                <Users className="w-6 h-6 text-purple-600" />
+              </div>
+            </div>
+            <div className="mt-4 flex items-center text-sm">
+              <TrendingUp className="w-4 h-4 text-green-500 mr-1" />
+              <span className="text-green-600">+23%</span>
+              <span className="text-gray-500 ml-1">vs mês passado</span>
+            </div>
           </div>
-        )}
 
-        {activeTab === 'settings' && (
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Configurações</h2>
-            <p className="text-gray-600">Funcionalidade de configurações será implementada aqui.</p>
+          <div className="bg-white rounded-2xl shadow-soft p-6 border border-gray-100 hover:shadow-medium transition-all duration-300">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Receita Total</p>
+                <p className="text-3xl font-bold text-gray-900">R$ {stats.totalRevenue.toLocaleString()}</p>
+              </div>
+              <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
+                <CreditCard className="w-6 h-6 text-orange-600" />
+              </div>
+            </div>
+            <div className="mt-4 flex items-center text-sm">
+              <TrendingUp className="w-4 h-4 text-green-500 mr-1" />
+              <span className="text-green-600">+18%</span>
+              <span className="text-gray-500 ml-1">vs mês passado</span>
+            </div>
           </div>
-        )}
+        </div>
+
+        {/* Quick Actions */}
+        <div className="mb-8">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Ações Rápidas</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {quickActions.map((action, index) => (
+              <button
+                key={index}
+                onClick={action.action}
+                className={`bg-white rounded-xl shadow-soft p-4 border border-gray-100 hover:shadow-medium transition-all duration-300 transform hover:-translate-y-1 group`}
+              >
+                <div className={`w-12 h-12 bg-${action.color}-100 rounded-lg flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-200`}>
+                  <action.icon className={`w-6 h-6 text-${action.color}-600`} />
+                </div>
+                <p className="text-sm font-medium text-gray-900">{action.label}</p>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Recent Events */}
+        <div className="bg-white rounded-2xl shadow-soft border border-gray-100 overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-200">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-semibold text-gray-900">Eventos Recentes</h2>
+              <div className="flex items-center space-x-2">
+                <button className="p-2 text-gray-600 hover:text-gray-900 transition-colors">
+                  <Filter className="w-4 h-4" />
+                </button>
+                <button className="p-2 text-gray-600 hover:text-gray-900 transition-colors">
+                  <Download className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Evento</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Participantes</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Receita</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {recentEvents.map((event) => (
+                  <tr key={event.id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div>
+                        <div className="text-sm font-medium text-gray-900">{event.name}</div>
+                        <div className="text-sm text-gray-500">ID: #{event.id}</div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">{new Date(event.date).toLocaleDateString('pt-BR')}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">{event.participants}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                        event.status === 'active' 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-yellow-100 text-yellow-800'
+                      }`}>
+                        {event.status === 'active' ? 'Ativo' : 'Próximo'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900">R$ {event.revenue.toLocaleString()}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <div className="flex items-center space-x-2">
+                        <button className="text-blue-600 hover:text-blue-900 transition-colors">
+                          <Eye className="w-4 h-4" />
+                        </button>
+                        <button className="text-gray-600 hover:text-gray-900 transition-colors">
+                          <MoreVertical className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Charts Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
+          <div className="bg-white rounded-2xl shadow-soft p-6 border border-gray-100">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Participantes por Mês</h3>
+            <div className="h-64 bg-gray-50 rounded-lg flex items-center justify-center">
+              <div className="text-center text-gray-500">
+                <BarChart3 className="w-12 h-12 mx-auto mb-2" />
+                <p>Gráfico de participantes</p>
+                <p className="text-sm">Integração com biblioteca de gráficos</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-2xl shadow-soft p-6 border border-gray-100">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Receita por Evento</h3>
+            <div className="h-64 bg-gray-50 rounded-lg flex items-center justify-center">
+              <div className="text-center text-gray-500">
+                <CreditCard className="w-12 h-12 mx-auto mb-2" />
+                <p>Gráfico de receita</p>
+                <p className="text-sm">Integração com biblioteca de gráficos</p>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
