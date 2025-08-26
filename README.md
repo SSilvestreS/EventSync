@@ -552,13 +552,7 @@ Este projeto está licenciado sob a Licença MIT - veja o arquivo [LICENSE](LICE
 
 
 
----
 
-## **EventSync - Transformando a Gestão de Eventos**
-
-**Uma plataforma completa, moderna e responsiva para criar, gerenciar e analisar eventos de sucesso.**
-
-**Status: PROJETO COMPLETAMENTE FINALIZADO - Versão 1.3 com Responsividade Total!**
 
 
 
