@@ -4,73 +4,70 @@ const bcrypt = require('bcryptjs');
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('🌱 Iniciando seed do banco de dados...');
+  console.log('Iniciando seed do banco de dados...');
 
-  // Criar usuário admin
-  const adminPassword = await bcrypt.hash('admin123', 12);
-  const admin = await prisma.user.upsert({
-    where: { email: 'admin@eventsync.com' },
-    update: {},
-    create: {
+  // Limpar banco
+  await prisma.certificate.deleteMany();
+  await prisma.coupon.deleteMany();
+  await prisma.payment.deleteMany();
+  await prisma.sessionRegistration.deleteMany();
+  await prisma.registration.deleteMany();
+  await prisma.session.deleteMany();
+  await prisma.media.deleteMany();
+  await prisma.sponsor.deleteMany();
+  await prisma.event.deleteMany();
+  await prisma.notification.deleteMany();
+  await prisma.user.deleteMany();
+
+  console.log('Banco limpo com sucesso');
+
+  // Criar usuários
+  const adminUser = await prisma.user.create({
+    data: {
       email: 'admin@eventsync.com',
       name: 'Administrador EventSync',
-      password: adminPassword,
+      password: await bcrypt.hash('admin123', 10),
       role: 'ADMIN',
       isVerified: true,
-      emailVerified: new Date(),
-      company: 'EventSync',
-      bio: 'Administrador do sistema EventSync'
-    },
+      phone: '+5511999999999',
+      company: 'EventSync Corp'
+    }
   });
 
-  // Criar usuário organizador
-  const organizerPassword = await bcrypt.hash('organizer123', 12);
-  const organizer = await prisma.user.upsert({
-    where: { email: 'organizer@eventsync.com' },
-    update: {},
-    create: {
-      email: 'organizer@eventsync.com',
-      name: 'João Silva',
-      password: organizerPassword,
+  const organizerUser = await prisma.user.create({
+    data: {
+      email: 'organizador@eventsync.com',
+      name: 'João Silva - Organizador',
+      password: await bcrypt.hash('organizador123', 10),
       role: 'ORGANIZER',
       isVerified: true,
-      emailVerified: new Date(),
-      company: 'Tech Events Brasil',
-      bio: 'Organizador de eventos de tecnologia',
-      phone: '(11) 99999-9999'
-    },
+      phone: '+5511888888888',
+      company: 'Tech Events Ltda'
+    }
   });
 
-  // Criar usuário participante
-  const attendeePassword = await bcrypt.hash('attendee123', 12);
-  const attendee = await prisma.user.upsert({
-    where: { email: 'attendee@eventsync.com' },
-    update: {},
-    create: {
-      email: 'attendee@eventsync.com',
-      name: 'Maria Santos',
-      password: attendeePassword,
+  const attendeeUser = await prisma.user.create({
+    data: {
+      email: 'participante@eventsync.com',
+      name: 'Maria Santos - Participante',
+      password: await bcrypt.hash('participante123', 10),
       role: 'ATTENDEE',
       isVerified: true,
-      emailVerified: new Date(),
-      company: 'Startup XYZ',
-      bio: 'Desenvolvedora apaixonada por eventos',
-      phone: '(11) 88888-8888'
-    },
+      phone: '+5511777777777',
+      company: 'Digital Solutions'
+    }
   });
 
-  console.log('✅ Usuários criados:', { admin: admin.email, organizer: organizer.email, attendee: attendee.email });
+  console.log('Usuários criados com sucesso');
 
-  // Criar eventos de exemplo
-  const event1 = await prisma.event.create({
+  // Criar eventos
+  const techConference = await prisma.event.create({
     data: {
       title: 'Tech Conference 2024',
-      description: 'A maior conferência de tecnologia do Brasil, com palestras sobre IA, Blockchain e desenvolvimento web.',
-      shortDescription: 'Conferência de tecnologia com foco em inovação',
-      category: 'CONFERENCE',
-      status: 'PUBLISHED',
-      startDate: new Date('2024-06-15T09:00:00Z'),
-      endDate: new Date('2024-06-15T18:00:00Z'),
+      description: 'A maior conferência de tecnologia do Brasil',
+      date: new Date('2024-12-15T09:00:00Z'),
+      time: '09:00',
+      duration: 8,
       location: 'Centro de Convenções São Paulo',
       address: 'Av. Paulista, 1000',
       city: 'São Paulo',
@@ -81,274 +78,290 @@ async function main() {
       currentRegistrations: 0,
       price: 299.99,
       currency: 'BRL',
-      imageUrl: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800',
-      bannerUrl: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1200',
-      requirements: 'Conhecimentos básicos em tecnologia',
-      contactEmail: 'contato@techconference.com',
-      contactPhone: '(11) 3333-3333',
-      website: 'https://techconference.com',
-      tags: ['tecnologia', 'IA', 'blockchain', 'desenvolvimento'],
-      isPublic: true,
-      allowWaitlist: true,
-      maxWaitlist: 100,
-      organizerId: organizer.id
+      category: 'CONFERENCE',
+      status: 'PUBLISHED',
+      organizerId: organizerUser.id,
+      image: '/images/tech-conference.jpg',
+      website: 'https://techconference.com.br',
+      tags: ['tecnologia', 'inovação', 'startups', 'IA'],
+      isPublic: true
     }
   });
 
-  const event2 = await prisma.event.create({
+  const workshopAI = await prisma.event.create({
     data: {
-      title: 'Workshop de React Avançado',
-      description: 'Workshop prático sobre React Hooks, Context API, Performance e boas práticas.',
-      shortDescription: 'Aprenda React avançado na prática',
-      category: 'WORKSHOP',
-      status: 'PUBLISHED',
-      startDate: new Date('2024-07-20T14:00:00Z'),
-      endDate: new Date('2024-07-20T18:00:00Z'),
-      location: 'Escola de Programação CodeLab',
+      title: 'Workshop de Inteligência Artificial',
+      description: 'Aprenda os fundamentos da IA na prática',
+      date: new Date('2024-11-20T14:00:00Z'),
+      time: '14:00',
+      duration: 4,
+      location: 'Escola de Tecnologia',
       address: 'Rua Augusta, 500',
       city: 'São Paulo',
       state: 'SP',
       country: 'Brasil',
       coordinates: { lat: -23.5489, lng: -46.6388 },
-      capacity: 30,
+      capacity: 50,
       currentRegistrations: 0,
       price: 149.99,
       currency: 'BRL',
-      imageUrl: 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=800',
-      bannerUrl: 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=1200',
-      requirements: 'Conhecimento básico em React',
-      contactEmail: 'contato@codelab.com',
-      contactPhone: '(11) 4444-4444',
-      website: 'https://codelab.com',
-      tags: ['react', 'javascript', 'frontend', 'workshop'],
-      isPublic: true,
-      allowWaitlist: true,
-      maxWaitlist: 20,
-      organizerId: organizer.id
-    }
-  });
-
-  const event3 = await prisma.event.create({
-    data: {
-      title: 'Meetup de Startups',
-      description: 'Networking e palestras sobre empreendedorismo, inovação e mercado de startups.',
-      shortDescription: 'Conecte-se com empreendedores',
-      category: 'MEETUP',
+      category: 'WORKSHOP',
       status: 'PUBLISHED',
-      startDate: new Date('2024-08-10T19:00:00Z'),
-      endDate: new Date('2024-08-10T22:00:00Z'),
-      location: 'WeWork Paulista',
-      address: 'Av. Paulista, 2000',
-      city: 'São Paulo',
-      state: 'SP',
-      country: 'Brasil',
-      coordinates: { lat: -23.5505, lng: -46.6333 },
-      capacity: 100,
-      currentRegistrations: 0,
-      price: 0,
-      currency: 'BRL',
-      imageUrl: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=800',
-      bannerUrl: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=1200',
-      requirements: 'Interesse em empreendedorismo',
-      contactEmail: 'contato@startupmeetup.com',
-      contactPhone: '(11) 5555-5555',
-      website: 'https://startupmeetup.com',
-      tags: ['startup', 'empreendedorismo', 'networking', 'inovação'],
-      isPublic: true,
-      allowWaitlist: false,
-      organizerId: organizer.id
+      organizerId: organizerUser.id,
+      image: '/images/ai-workshop.jpg',
+      website: 'https://aiworkshop.com.br',
+      tags: ['inteligência artificial', 'machine learning', 'python'],
+      isPublic: true
     }
   });
 
-  console.log('✅ Eventos criados:', { 
-    event1: event1.title, 
-    event2: event2.title, 
-    event3: event3.title 
-  });
+  console.log('Eventos criados com sucesso');
 
-  // Criar sessões para o primeiro evento
+  // Criar sessões
   const session1 = await prisma.session.create({
     data: {
-      title: 'Introdução à Inteligência Artificial',
-      description: 'Conceitos básicos de IA e machine learning',
-      startTime: new Date('2024-06-15T09:00:00Z'),
-      endTime: new Date('2024-06-15T10:30:00Z'),
-      speaker: 'Dr. Carlos Silva',
-      room: 'Auditório Principal',
-      capacity: 500,
-      eventId: event1.id
+      title: 'Abertura e Keynote',
+      description: 'Palestra de abertura sobre o futuro da tecnologia',
+      startTime: new Date('2024-12-15T09:00:00Z'),
+      endTime: new Date('2024-12-15T10:30:00Z'),
+      duration: 1.5,
+      speaker: 'Dr. Carlos Tech',
+      eventId: techConference.id
     }
   });
 
   const session2 = await prisma.session.create({
     data: {
-      title: 'Blockchain e Criptomoedas',
-      description: 'O futuro das transações digitais',
-      startTime: new Date('2024-06-15T11:00:00Z'),
-      endTime: new Date('2024-06-15T12:30:00Z'),
-      speaker: 'Ana Costa',
-      room: 'Auditório Principal',
-      capacity: 500,
-      eventId: event1.id
+      title: 'Inteligência Artificial na Prática',
+      description: 'Demonstrações práticas de IA',
+      startTime: new Date('2024-12-15T11:00:00Z'),
+      endTime: new Date('2024-12-15T12:30:00Z'),
+      duration: 1.5,
+      speaker: 'Dra. Ana IA',
+      eventId: techConference.id
     }
   });
 
-  const session3 = await prisma.session.create({
+  console.log('Sessões criadas com sucesso');
+
+  // Criar cupons
+  const earlyBirdCoupon = await prisma.coupon.create({
     data: {
-      title: 'Desenvolvimento Web Moderno',
-      description: 'Tendências e tecnologias atuais',
-      startTime: new Date('2024-06-15T14:00:00Z'),
-      endTime: new Date('2024-06-15T15:30:00Z'),
-      speaker: 'Pedro Santos',
-      room: 'Sala A',
-      capacity: 200,
-      eventId: event1.id
+      code: 'EARLYBIRD2024',
+      description: 'Desconto Early Bird - Inscrição antecipada',
+      discountType: 'PERCENTAGE',
+      discountValue: 20,
+      maxUses: 100,
+      currentUses: 0,
+      validFrom: new Date('2024-08-01T00:00:00Z'),
+      validUntil: new Date('2024-10-31T23:59:59Z'),
+      minOrderValue: 0,
+      maxDiscount: 100,
+      isActive: true,
+      eventId: techConference.id
     }
   });
 
-  console.log('✅ Sessões criadas para o evento principal');
-
-  // Criar patrocinadores
-  const sponsor1 = await prisma.sponsor.create({
+  const loyaltyCoupon = await prisma.coupon.create({
     data: {
-      name: 'TechCorp',
-      logo: 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=200',
-      website: 'https://techcorp.com',
-      description: 'Empresa líder em soluções tecnológicas',
-      tier: 'PLATINUM',
-      eventId: event1.id
+      code: 'LOYALTY2024',
+      description: 'Desconto para participantes recorrentes',
+      discountType: 'FIXED_AMOUNT',
+      discountValue: 50,
+      maxUses: null,
+      currentUses: 0,
+      validFrom: new Date('2024-08-01T00:00:00Z'),
+      validUntil: new Date('2024-12-31T23:59:59Z'),
+      minOrderValue: 200,
+      maxDiscount: 50,
+      isActive: true,
+      eventId: techConference.id
     }
   });
 
-  const sponsor2 = await prisma.sponsor.create({
-    data: {
-      name: 'InnovateLab',
-      logo: 'https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=200',
-      website: 'https://innovatelab.com',
-      description: 'Laboratório de inovação e pesquisa',
-      tier: 'GOLD',
-      eventId: event1.id
-    }
-  });
+  console.log('Cupons criados com sucesso');
 
-  console.log('✅ Patrocinadores criados');
-
-  // Criar inscrições de exemplo
+  // Criar inscrições
   const registration1 = await prisma.registration.create({
     data: {
+      userId: attendeeUser.id,
+      eventId: techConference.id,
       status: 'CONFIRMED',
-      ticketType: 'VIP',
-      price: 299.99,
-      currency: 'BRL',
-      notes: 'Participante VIP com acesso a área exclusiva',
-      qrCode: 'VIP-001-ABC123',
-      userId: attendee.id,
-      eventId: event1.id
+      registeredAt: new Date('2024-08-15T10:00:00Z'),
+      checkedInAt: null,
+      checkedOutAt: null,
+      notes: 'Participante interessado em IA'
     }
   });
 
   const registration2 = await prisma.registration.create({
     data: {
-      status: 'PENDING',
-      ticketType: 'Standard',
-      price: 149.99,
-      currency: 'BRL',
-      notes: 'Aguardando confirmação de pagamento',
-      qrCode: 'STD-002-DEF456',
-      userId: attendee.id,
-      eventId: event2.id
+      userId: attendeeUser.id,
+      eventId: workshopAI.id,
+      status: 'CONFIRMED',
+      registeredAt: new Date('2024-08-20T14:00:00Z'),
+      checkedInAt: null,
+      checkedOutAt: null,
+      notes: 'Participante do workshop de IA'
     }
   });
 
-  console.log('✅ Inscrições criadas');
+  console.log('Inscrições criadas com sucesso');
 
-  // Criar pagamento para a primeira inscrição
+  // Criar pagamentos
   const payment1 = await prisma.payment.create({
     data: {
       amount: 299.99,
       currency: 'BRL',
       status: 'COMPLETED',
       method: 'CREDIT_CARD',
-      stripePaymentId: 'pi_mock_123',
-      description: 'Inscrição VIP - Tech Conference 2024',
-      metadata: {
-        eventId: event1.id,
-        eventTitle: event1.title,
-        ticketType: 'VIP'
-      },
-      userId: attendee.id,
-      registrationId: registration1.id
+      transactionId: 'TXN_' + Date.now(),
+      userId: attendeeUser.id,
+      registrationId: registration1.id,
+      description: 'Pagamento Tech Conference 2024',
+      metadata: { gateway: 'stripe', cardType: 'visa' }
     }
   });
 
-  console.log('✅ Pagamento criado');
+  const payment2 = await prisma.payment.create({
+    data: {
+      amount: 149.99,
+      currency: 'BRL',
+      status: 'COMPLETED',
+      method: 'PIX',
+      transactionId: 'PIX_' + Date.now(),
+      userId: attendeeUser.id,
+      registrationId: registration2.id,
+      description: 'Pagamento Workshop IA',
+      metadata: { gateway: 'pix', qrCode: 'pix_qr_code_123' }
+    }
+  });
+
+  console.log('Pagamentos criados com sucesso');
+
+  // Criar certificados
+  const certificate1 = await prisma.certificate.create({
+    data: {
+      registrationId: registration1.id,
+      certificateCode: 'CERT_' + Date.now() + '_001',
+      issuedAt: new Date(),
+      expiresAt: new Date('2025-12-15T23:59:59Z'),
+      isActive: true,
+      templateId: 'default',
+      customFields: {
+        eventTitle: techConference.title,
+        userName: attendeeUser.name,
+        eventDate: techConference.date,
+        totalHours: 8
+      },
+      downloadUrl: '/certificates/generated/certificate_001.pdf'
+    }
+  });
+
+  console.log('Certificados criados com sucesso');
 
   // Criar notificações
   const notification1 = await prisma.notification.create({
     data: {
-      type: 'REGISTRATION_CONFIRMED',
       title: 'Inscrição Confirmada',
-      message: 'Sua inscrição para Tech Conference 2024 foi confirmada!',
+      message: `Sua inscrição para "${techConference.title}" foi confirmada!`,
+      type: 'REGISTRATION_CONFIRMED',
       isRead: false,
-      userId: attendee.id
+      data: { eventId: techConference.id, eventTitle: techConference.title },
+      userId: attendeeUser.id
     }
   });
 
   const notification2 = await prisma.notification.create({
     data: {
-      type: 'EVENT_REMINDER',
-      title: 'Lembrete de Evento',
-      message: 'Tech Conference 2024 acontece amanhã! Não se esqueça do seu QR Code.',
+      title: 'Certificado Disponível',
+      message: `Seu certificado para "${techConference.title}" está pronto para download!`,
+      type: 'GENERAL',
       isRead: false,
-      userId: attendee.id
+      data: { 
+        certificateId: certificate1.id, 
+        eventTitle: techConference.title,
+        downloadUrl: certificate1.downloadUrl
+      },
+      userId: attendeeUser.id
     }
   });
 
-  console.log('✅ Notificações criadas');
+  console.log('Notificações criadas com sucesso');
 
-  // Criar mídia para os eventos
+  // Criar patrocinadores
+  const sponsor1 = await prisma.sponsor.create({
+    data: {
+      name: 'TechCorp',
+      logo: '/images/sponsors/techcorp.png',
+      website: 'https://techcorp.com.br',
+      tier: 'PLATINUM',
+      eventId: techConference.id
+    }
+  });
+
+  const sponsor2 = await prisma.sponsor.create({
+    data: {
+      name: 'InnovationLab',
+      logo: '/images/sponsors/innovationlab.png',
+      website: 'https://innovationlab.com.br',
+      tier: 'GOLD',
+      eventId: techConference.id
+    }
+  });
+
+  console.log('Patrocinadores criados com sucesso');
+
+  // Criar mídia
   const media1 = await prisma.media.create({
     data: {
+      title: 'Banner Principal',
+      description: 'Banner principal da Tech Conference 2024',
+      url: '/images/events/tech-conference-banner.jpg',
       type: 'IMAGE',
-      url: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800',
-      alt: 'Tech Conference 2024',
-      caption: 'Imagem promocional da conferência',
-      eventId: event1.id
+      eventId: techConference.id
     }
   });
 
   const media2 = await prisma.media.create({
     data: {
-      type: 'IMAGE',
-      url: 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=800',
-      alt: 'Workshop React',
-      caption: 'Workshop prático de React',
-      eventId: event2.id
+      title: 'Apresentação Keynote',
+      description: 'Slides da palestra de abertura',
+      url: '/documents/presentations/keynote-2024.pdf',
+      type: 'DOCUMENT',
+      eventId: techConference.id
     }
   });
 
-  console.log('✅ Mídia criada');
+  console.log('Mídia criada com sucesso');
 
-  console.log('🎉 Seed do banco de dados concluído com sucesso!');
-  console.log('\n📊 Resumo dos dados criados:');
-  console.log(`- Usuários: ${await prisma.user.count()}`);
-  console.log(`- Eventos: ${await prisma.event.count()}`);
-  console.log(`- Sessões: ${await prisma.session.count()}`);
-  console.log(`- Inscrições: ${await prisma.registration.count()}`);
-  console.log(`- Pagamentos: ${await prisma.payment.count()}`);
-  console.log(`- Patrocinadores: ${await prisma.sponsor.count()}`);
-  console.log(`- Notificações: ${await prisma.notification.count()}`);
-  console.log(`- Mídia: ${await prisma.media.count()}`);
-
-  console.log('\n🔑 Credenciais de teste:');
+  console.log('Seed concluído com sucesso!');
+  console.log('');
+  console.log('Resumo dos dados criados:');
+  console.log(`Usuários: ${await prisma.user.count()}`);
+  console.log(`Eventos: ${await prisma.event.count()}`);
+  console.log(`Sessões: ${await prisma.session.count()}`);
+  console.log(`Cupons: ${await prisma.coupon.count()}`);
+  console.log(`Inscrições: ${await prisma.registration.count()}`);
+  console.log(`Pagamentos: ${await prisma.payment.count()}`);
+  console.log(`Certificados: ${await prisma.certificate.count()}`);
+  console.log(`Notificações: ${await prisma.notification.count()}`);
+  console.log(`Patrocinadores: ${await prisma.sponsor.count()}`);
+  console.log(`Mídia: ${await prisma.media.count()}`);
+  console.log('');
+  console.log('Credenciais de teste:');
   console.log('Admin: admin@eventsync.com / admin123');
-  console.log('Organizador: organizer@eventsync.com / organizer123');
-  console.log('Participante: attendee@eventsync.com / attendee123');
+  console.log('Organizador: organizador@eventsync.com / organizador123');
+  console.log('Participante: participante@eventsync.com / participante123');
+  console.log('');
+  console.log('Cupons de teste:');
+  console.log('EARLYBIRD2024 (20% desconto)');
+  console.log('LOYALTY2024 (R$ 50,00 desconto)');
 }
 
 main()
   .catch((e) => {
-    console.error('❌ Erro durante o seed:', e);
+    console.error('Erro durante o seed:', e);
     process.exit(1);
   })
   .finally(async () => {

@@ -1,120 +1,162 @@
 import { NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { PrismaClient } from '@prisma/client';
 
-// Dados mockados para demonstração
-let events = [
-  {
-    id: 1,
-    title: 'Workshop de Desenvolvimento Web',
-    description: 'Aprenda as melhores práticas de desenvolvimento web moderno com React e Node.js',
-    date: '2024-02-15',
-    time: '14:00',
-    location: 'Centro de Inovação',
-    capacity: 50,
-    registered: 35,
-    category: 'Tecnologia',
-    status: 'Ativo',
-    price: 'R$ 150,00',
-    image: '/images/workshop-web.jpg',
-    createdAt: '2024-01-15T10:00:00Z'
-  },
-  {
-    id: 2,
-    title: 'Palestra sobre Inteligência Artificial',
-    description: 'Descubra como a IA está transformando diferentes setores da economia',
-    date: '2024-02-20',
-    time: '19:00',
-    location: 'Auditório Principal',
-    capacity: 100,
-    registered: 78,
-    category: 'Tecnologia',
-    status: 'Ativo',
-    price: 'Gratuito',
-    image: '/images/palestra-ia.jpg',
-    createdAt: '2024-01-10T10:00:00Z'
-  }
-];
+const prisma = new PrismaClient();
 
-// GET - Listar todos os eventos
 export async function GET(request) {
   try {
+    const session = await getServerSession();
+    if (!session) {
+      return NextResponse.json({ message: 'Não autorizado' }, { status: 401 });
+    }
+
     const { searchParams } = new URL(request.url);
-    const category = searchParams.get('category');
+    const organizerId = searchParams.get('organizerId');
     const status = searchParams.get('status');
-    const search = searchParams.get('search');
+    const category = searchParams.get('category');
+    const isPublic = searchParams.get('isPublic');
 
-    let filteredEvents = [...events];
-
-    // Filtro por categoria
-    if (category && category !== 'Todos') {
-      filteredEvents = filteredEvents.filter(event => event.category === category);
+    // Construir filtros
+    const where = {};
+    
+    if (organizerId) {
+      where.organizerId = organizerId;
+    }
+    
+    if (status) {
+      where.status = status;
+    }
+    
+    if (category) {
+      where.category = category;
+    }
+    
+    if (isPublic !== null) {
+      where.isPublic = isPublic === 'true';
     }
 
-    // Filtro por status
-    if (status && status !== 'Todos') {
-      filteredEvents = filteredEvents.filter(event => event.status === status);
-    }
-
-    // Filtro por busca
-    if (search) {
-      filteredEvents = filteredEvents.filter(event => 
-        event.title.toLowerCase().includes(search.toLowerCase()) ||
-        event.description.toLowerCase().includes(search.toLowerCase())
-      );
-    }
-
-    // Ordenar por data de criação (mais recentes primeiro)
-    filteredEvents.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-
-    return NextResponse.json({
-      success: true,
-      data: filteredEvents,
-      total: filteredEvents.length,
-      message: 'Eventos listados com sucesso'
+    const events = await prisma.event.findMany({
+      where,
+      include: {
+        organizer: {
+          select: {
+            id: true,
+            name: true,
+            email: true
+          }
+        },
+        _count: {
+          select: {
+            registrations: true,
+            sessions: true,
+            sponsors: true
+          }
+        }
+      },
+      orderBy: {
+        date: 'asc'
+      }
     });
+
+    return NextResponse.json(events);
+
   } catch (error) {
-    console.error('Erro ao listar eventos:', error);
+    console.error('Erro ao buscar eventos:', error);
     return NextResponse.json(
-      { success: false, message: 'Erro interno do servidor' },
+      { message: 'Erro interno do servidor' },
       { status: 500 }
     );
+  } finally {
+    await prisma.$disconnect();
   }
 }
 
-// POST - Criar novo evento
 export async function POST(request) {
   try {
+    const session = await getServerSession();
+    if (!session) {
+      return NextResponse.json({ message: 'Não autorizado' }, { status: 401 });
+    }
+
     const body = await request.json();
-    
-    // Validação básica
-    if (!body.title || !body.description || !body.date || !body.time || !body.location || !body.capacity) {
+    const {
+      title,
+      description,
+      date,
+      time,
+      duration,
+      location,
+      address,
+      city,
+      state,
+      country,
+      coordinates,
+      capacity,
+      price,
+      currency,
+      category,
+      status,
+      image,
+      website,
+      tags,
+      isPublic
+    } = body;
+
+    // Validações básicas
+    if (!title || !date || !location) {
       return NextResponse.json(
-        { success: false, message: 'Campos obrigatórios não preenchidos' },
+        { message: 'Título, data e local são obrigatórios' },
         { status: 400 }
       );
     }
 
-    // Criar novo evento
-    const newEvent = {
-      id: events.length + 1,
-      ...body,
-      registered: 0,
-      status: body.status || 'Rascunho',
-      createdAt: new Date().toISOString(),
-      image: body.image || '/images/default-event.jpg'
-    };
+    // Criar evento
+    const event = await prisma.event.create({
+      data: {
+        title,
+        description,
+        date: new Date(date),
+        time,
+        duration: duration || 1,
+        location,
+        address,
+        city,
+        state,
+        country,
+        coordinates: coordinates || {},
+        capacity: capacity || 100,
+        currentRegistrations: 0,
+        price: price || 0,
+        currency: currency || 'BRL',
+        category: category || 'CONFERENCE',
+        status: status || 'DRAFT',
+        organizerId: session.user.id,
+        image,
+        website,
+        tags: tags || [],
+        isPublic: isPublic !== undefined ? isPublic : true
+      },
+      include: {
+        organizer: {
+          select: {
+            id: true,
+            name: true,
+            email: true
+          }
+        }
+      }
+    });
 
-    events.push(newEvent);
+    return NextResponse.json(event, { status: 201 });
 
-    return NextResponse.json({
-      success: true,
-      data: newEvent,
-      message: 'Evento criado com sucesso'
-    }, { status: 201 });
   } catch (error) {
     console.error('Erro ao criar evento:', error);
     return NextResponse.json(
-      { success: false, message: 'Erro interno do servidor' },
+      { message: 'Erro interno do servidor' },
       { status: 500 }
     );
+  } finally {
+    await prisma.$disconnect();
   }
 }
