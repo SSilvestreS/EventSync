@@ -40,6 +40,9 @@ model User {
   crmContacts   CRMContact[]
   analytics     UserAnalytics[]
   preferences   UserPreferences?
+  pushSubscriptions PushSubscription[]
+  notificationLogs NotificationLog[]
+  notificationPreferences NotificationPreference?
 
   @@map("users")
 }
@@ -633,4 +636,60 @@ enum ReferralStatus {
   APPROVED
   PAID
   CANCELLED
+}
+
+// NOVOS MODELOS PARA NOTIFICAÇÕES AVANÇADAS
+
+model PushSubscription {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+  subscription Json     // Dados da subscription do service worker
+  endpoint     String   // URL do service worker
+  p256dh       String   // Chave pública
+  auth         String   // Chave de autenticação
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([userId, endpoint])
+  @@map("push_subscriptions")
+}
+
+model NotificationLog {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  type      String   // EMAIL, PUSH, SMS, WHATSAPP
+  template  String   // Nome do template usado
+  data      Json     // Dados enviados na notificação
+  messageId String?  // ID da mensagem (email, push, etc.)
+  status    String   @default("SENT") // SENT, FAILED, DELIVERED
+  sentAt    DateTime @default(now())
+  deliveredAt DateTime?
+  failedAt  DateTime?
+  error     String?  // Mensagem de erro se falhou
+
+  @@map("notification_logs")
+}
+
+model NotificationPreference {
+  id                    String   @id @default(cuid())
+  userId                String   @unique
+  user                  User     @relation(fields: [userId], references: [id])
+  emailNotifications    Boolean  @default(true)
+  pushNotifications     Boolean  @default(true)
+  smsNotifications      Boolean  @default(false)
+  whatsappNotifications Boolean  @default(false)
+  reminder24h           Boolean  @default(true)
+  reminder2h            Boolean  @default(true)
+  reminder30min         Boolean  @default(true)
+  eventUpdates          Boolean  @default(true)
+  paymentConfirmations  Boolean  @default(true)
+  marketingEmails       Boolean  @default(false)
+  quietHours            Json?    // {start: "22:00", end: "08:00"}
+  timezone              String   @default("America/Sao_Paulo")
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@map("notification_preferences")
 }

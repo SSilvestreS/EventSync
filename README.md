@@ -17,6 +17,14 @@ EventSync é uma plataforma completa para gerenciamento de eventos, inscrições
 - [x] **Múltiplos idiomas** - Implementado e funcional
 - [x] **Sistema de tracking de conversões** - Implementado e funcional
 
+### Versão 1.3 - 🚀 EM DESENVOLVIMENTO
+- [x] **Sistema de Notificações Push Avançado** - Implementado e funcional
+- [x] **Templates de Email Inteligentes** - Implementado e funcional
+- [x] **Service Worker PWA** - Implementado e funcional
+- [x] **Preferências de Notificação** - Implementado e funcional
+- [ ] **Integração WhatsApp Business** - Em desenvolvimento
+- [ ] **Sistema de Lembretes Inteligentes** - Em desenvolvimento
+
 ### Versão 2.0 - 🚀 EM PLANEJAMENTO
 - [ ] IA para recomendações de eventos
 - [ ] Realidade aumentada para check-in
@@ -42,6 +50,10 @@ EventSync é uma plataforma completa para gerenciamento de eventos, inscrições
 - [x] **Integração com CRM (HubSpot, Salesforce, Pipedrive, Zapier)**
 - [x] **Sistema completo de afiliados com comissões**
 - [x] **Suporte a 10 idiomas com internacionalização completa**
+- [x] **Sistema de notificações push em tempo real**
+- [x] **Templates de email responsivos e inteligentes**
+- [x] **Service worker para PWA e cache offline**
+- [x] **Preferências personalizáveis de notificação**
 
 ### PLANEJADAS (v2.0)
 - [ ] IA para recomendações de eventos
@@ -123,6 +135,9 @@ EventSync é uma plataforma completa para gerenciamento de eventos, inscrições
 - **HubSpot/Salesforce/Pipedrive** - Integração CRM
 - **i18next** - Internacionalização
 - **Segment/Rudder** - Tracking de conversões
+- **Web Push API** - Notificações push em tempo real
+- **Service Worker** - PWA e cache offline
+- **VAPID** - Autenticação de notificações push
 
 ### **Pagamentos e Integrações**
 - **Stripe** - Processamento de pagamentos
@@ -154,6 +169,10 @@ EventSync/
 │   │   ├── affiliates/         # Sistema de afiliados
 │   │   ├── i18n/               # Internacionalização
 │   │   ├── conversions/        # Tracking de conversões
+│   │   ├── notifications/      # Sistema de notificações
+│   │   │   ├── push/          # Notificações push
+│   │   │   ├── preferences/   # Preferências de notificação
+│   │   │   └── send/          # Envio de notificações
 │   │   └── webhooks/           # Webhooks (Stripe)
 │   ├── auth/                   # Páginas de autenticação
 │   ├── dashboard/              # Dashboard principal
@@ -170,6 +189,9 @@ EventSync/
 │   ├── crmService.js          # Serviço de CRM
 │   ├── affiliateService.js     # Serviço de afiliados
 │   ├── i18nService.js         # Serviço de internacionalização
+│   ├── notificationService.js # Serviço de notificações
+│   ├── emailTemplates.js      # Templates de email
+│   ├── notificationConfig.js  # Configurações de notificação
 │   └── config.js              # Configurações centralizadas
 ├── prisma/                     # Schema e migrações
 │   ├── schema.prisma          # Schema do banco
@@ -250,6 +272,10 @@ npm run crm:sync         # Sincronizar com CRM externo
 npm run i18n:extract     # Extrair textos para tradução
 npm run i18n:sync        # Sincronizar traduções
 
+# Notificações
+npm run notifications:test # Testar sistema de notificações
+npm run pwa:install       # Instalar como PWA
+
 # Testes
 npm run test             # Testes unitários
 npm run test:e2e         # Testes E2E
@@ -278,6 +304,9 @@ npm run stripe:test      # Testar integração Stripe
 - **AffiliateReferral** - Referências de afiliados
 - **UserPreferences** - Preferências de usuário
 - **ConversionTracking** - Tracking de conversões
+- **PushSubscription** - Subscriptions de notificação push
+- **NotificationLog** - Log de notificações enviadas
+- **NotificationPreference** - Preferências de notificação
 
 ### **Relacionamentos**
 - Usuários podem organizar múltiplos eventos
@@ -410,6 +439,13 @@ CMD ["npm", "start"]
 - `POST /api/i18n` - Preferências de usuário
 - `GET /api/conversions` - Tracking de conversões
 
+### **Novos Endpoints v1.3 - Notificações**
+- `POST /api/notifications/push` - Salvar subscription push
+- `DELETE /api/notifications/push` - Remover subscription
+- `GET /api/notifications/preferences` - Obter preferências
+- `POST /api/notifications/preferences` - Atualizar preferências
+- `POST /api/notifications/send` - Enviar notificações
+
 ### **Autenticação**
 Todas as rotas protegidas requerem token JWT no header:
 ```
@@ -454,6 +490,9 @@ Este projeto está licenciado sob a Licença MIT - veja o arquivo [LICENSE](LICE
 - [PostHog Docs](https://posthog.com/docs)
 - [HubSpot API Docs](https://developers.hubspot.com/docs)
 - [i18next Docs](https://www.i18next.com/overview/getting-started)
+- [Web Push Protocol](https://tools.ietf.org/html/rfc8030)
+- [Service Worker API](https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API)
+- [PWA Guidelines](https://web.dev/progressive-web-apps/)
 
 ## Roadmap Atualizado
 
@@ -532,6 +571,7 @@ Este projeto está licenciado sob a Licença MIT - veja o arquivo [LICENSE](LICE
 ### Progresso de Implementação
 - **Versão 1.1**: [x] 100% COMPLETA
 - **Versão 1.2**: [x] 100% IMPLEMENTADA
+- **Versão 1.3**: [x] 80% IMPLEMENTADA (Notificações Push)
 - **Versão 2.0**: [ ] 0% (Futuro)
 
 ### Métricas do Projeto
@@ -543,8 +583,8 @@ Este projeto está licenciado sob a Licença MIT - veja o arquivo [LICENSE](LICE
 
 ### Próximos Marcos
 - **Q1 2024**: ✅ Versão 1.2 implementada e funcional
-- **Q2 2024**: ✅ Testes e otimizações da v1.2 em andamento
-- **Q3 2024**: 🚀 Planejamento e arquitetura da v2.0
+- **Q2 2024**: ✅ Versão 1.3 implementada com notificações push
+- **Q3 2024**: 🚀 Finalização da v1.3 e planejamento da v2.0
 - **Q4 2024**: 🚀 Início do desenvolvimento da v2.0
 - **2025**: 🎯 Lançamento da versão 2.0 com IA e AR
 
