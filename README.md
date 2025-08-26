@@ -384,15 +384,15 @@ npm run test:e2e         # Executar testes end-to-end
 ### **Interface Principal**
 
 #### **Landing Page**
-![Landing Page - EventSync](https://ibb.co/d0LP7Tt7)
+[![Landing Page - EventSync](https://i.ibb.co/d0LP7Tt7/landing-page.png)](https://ibb.co/d0LP7Tt7)
 *Página inicial responsiva com design moderno*
 
 #### **Login Page**
-![Login Page - EventSync](https://ibb.co/fdtD3w8H)
+[![Login Page - EventSync](https://i.ibb.co/fdtD3w8H/login-page.png)](https://ibb.co/fdtD3w8H)
 *Sistema de autenticação elegante e funcional*
 
 #### **Dashboard**
-![Dashboard - EventSync](https://ibb.co/WWtgB0SC)
+[![Dashboard - EventSync](https://i.ibb.co/WWtgB0SC/dashboard.png)](https://ibb.co/WWtgB0SC)
 *Painel principal com métricas e funcionalidades*
 
 ### **Características Visuais**
