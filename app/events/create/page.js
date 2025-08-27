@@ -1,461 +1,928 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { ArrowLeft, Save, Eye, Calendar, MapPin, Users, Tag, Image as ImageIcon } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import {
+  Calendar,
+  MapPin,
+  Users,
+  Clock,
+  Tag,
+  Image as ImageIcon,
+  Settings,
+  Eye,
+  Save,
+  Plus,
+  X,
+  Upload,
+  Globe,
+  CreditCard,
+  Shield,
+  Zap
+} from 'lucide-react';
 
 export default function CreateEventPage() {
-  const router = useRouter();
-  const [isPreview, setIsPreview] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    category: '',
     date: '',
     time: '',
-    duration: '',
+    endTime: '',
     location: '',
-    capacity: '',
-    price: '',
-    isFree: false,
+    address: '',
+    city: '',
+    state: '',
+    zipCode: '',
+    country: 'Brasil',
+    maxParticipants: 100,
+    category: 'technology',
+    price: 0,
+    currency: 'BRL',
+    isOnline: false,
+    onlineUrl: '',
+    isHybrid: false,
+    tags: [],
     image: null,
-    tags: '',
-    requirements: '',
-    contactEmail: '',
-    contactPhone: ''
+    coverImage: null,
+    settings: {
+      allowWaitlist: true,
+      requireApproval: false,
+      allowCancellation: true,
+      cancellationDeadline: 24,
+      allowTransfers: true,
+      maxTransfers: 1,
+      requirePayment: false,
+      allowPartialPayment: false,
+      requireDocuments: false,
+      allowQuestions: true,
+      allowFeedback: true,
+      sendReminders: true,
+      reminderDays: [1, 7, 14],
+      allowSocialSharing: true,
+      enableQRCode: true,
+      enableCheckIn: true,
+      enableAnalytics: true
+    }
   });
 
+  const [currentStep, setCurrentStep] = useState(1);
+  const [isPreviewMode, setIsPreviewMode] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [imagePreview, setImagePreview] = useState(null);
+  const [coverPreview, setCoverPreview] = useState(null);
+  const fileInputRef = useRef(null);
+  const coverInputRef = useRef(null);
+
   const categories = [
-    'Tecnologia',
-    'Marketing',
-    'Negócios',
-    'Educação',
-    'Arte',
-    'Saúde',
-    'Esporte',
-    'Entretenimento',
-    'Outros'
+    { value: 'technology', label: 'Tecnologia', icon: Zap },
+    { value: 'business', label: 'Negócios', icon: Users },
+    { value: 'education', label: 'Educação', icon: Globe },
+    { value: 'health', label: 'Saúde', icon: Shield },
+    { value: 'entertainment', label: 'Entretenimento', icon: Calendar },
+    { value: 'sports', label: 'Esportes', icon: Users },
+    { value: 'culture', label: 'Cultura', icon: Globe },
+    { value: 'other', label: 'Outros', icon: Tag }
   ];
 
-  const handleInputChange = (e) => {
-    const { name, value, type, checked } = e.target;
+  const currencies = [
+    { code: 'BRL', symbol: 'R$', name: 'Real Brasileiro' },
+    { code: 'USD', symbol: '$', name: 'Dólar Americano' },
+    { code: 'EUR', symbol: '€', name: 'Euro' },
+    { code: 'GBP', symbol: '£', name: 'Libra Esterlina' }
+  ];
+
+  const steps = [
+    { id: 1, title: 'Informações Básicas', icon: Calendar },
+    { id: 2, title: 'Local e Data', icon: MapPin },
+    { id: 3, title: 'Configurações', icon: Settings },
+    { id: 4, title: 'Mídia e Visual', icon: ImageIcon },
+    { id: 5, title: 'Revisão', icon: Eye }
+  ];
+
+  useEffect(() => {
+    // Auto-save draft every 30 seconds
+    const interval = setInterval(() => {
+      if (formData.title || formData.description) {
+        localStorage.setItem('eventDraft', JSON.stringify(formData));
+      }
+    }, 30000);
+
+    // Load draft on mount
+    const savedDraft = localStorage.getItem('eventDraft');
+    if (savedDraft) {
+      setFormData(JSON.parse(savedDraft));
+    }
+
+    return () => clearInterval(interval);
+  }, [formData]);
+
+  const validateStep = (step) => {
+    const newErrors = {};
+
+    switch (step) {
+      case 1:
+        if (!formData.title.trim()) newErrors.title = 'Título é obrigatório';
+        if (!formData.description.trim()) newErrors.description = 'Descrição é obrigatória';
+        if (formData.description.length < 50) newErrors.description = 'Descrição deve ter pelo menos 50 caracteres';
+        break;
+      case 2:
+        if (!formData.date) newErrors.date = 'Data é obrigatória';
+        if (!formData.time) newErrors.time = 'Horário é obrigatório';
+        if (!formData.location && !formData.isOnline) newErrors.location = 'Local é obrigatório para eventos presenciais';
+        if (formData.isOnline && !formData.onlineUrl) newErrors.onlineUrl = 'URL online é obrigatória para eventos online';
+        break;
+      case 3:
+        if (formData.maxParticipants < 1) newErrors.maxParticipants = 'Número de participantes deve ser maior que 0';
+        if (formData.price < 0) newErrors.price = 'Preço não pode ser negativo';
+        break;
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const nextStep = () => {
+    if (validateStep(currentStep)) {
+      setCurrentStep(Math.min(currentStep + 1, steps.length));
+    }
+  };
+
+  const prevStep = () => {
+    setCurrentStep(Math.max(currentStep - 1, 1));
+  };
+
+  const handleInputChange = (field, value) => {
     setFormData(prev => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value
+      [field]: value
     }));
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Aqui você implementaria a lógica para salvar o evento
-    console.log('Dados do evento:', formData);
-    alert('Evento criado com sucesso!');
-    router.push('/events');
+  const handleSettingsChange = (setting, value) => {
+    setFormData(prev => ({
+      ...prev,
+      settings: {
+        ...prev.settings,
+        [setting]: value
+      }
+    }));
   };
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
+  const handleImageUpload = (event, type) => {
+    const file = event.target.files[0];
     if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        if (type === 'image') {
+          setFormData(prev => ({ ...prev, image: file }));
+          setImagePreview(e.target.result);
+        } else {
+          setFormData(prev => ({ ...prev, coverImage: file }));
+          setCoverPreview(e.target.result);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const addTag = (tag) => {
+    if (tag && !formData.tags.includes(tag)) {
       setFormData(prev => ({
         ...prev,
-        image: file
+        tags: [...prev.tags, tag]
       }));
     }
   };
 
-  const EventPreview = () => (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">Prévia do Evento</h3>
+  const removeTag = (tagToRemove) => {
+    setFormData(prev => ({
+      ...prev,
+      tags: prev.tags.filter(tag => tag !== tagToRemove)
+    }));
+  };
+
+  const handleSubmit = async () => {
+    if (!validateStep(currentStep)) return;
+
+    setIsSaving(true);
+    try {
+      // Simular criação do evento
+      await new Promise(resolve => setTimeout(resolve, 2000));
       
-      <div className="space-y-4">
-        <div>
-          <h4 className="text-xl font-bold text-gray-900">{formData.title || 'Título do Evento'}</h4>
-          <p className="text-gray-600 mt-1">{formData.description || 'Descrição do evento aparecerá aqui...'}</p>
-        </div>
+      // Limpar draft
+      localStorage.removeItem('eventDraft');
+      
+      // Redirecionar para dashboard ou evento criado
+      alert('Evento criado com sucesso!');
+    } catch (error) {
+      console.error('Erro ao criar evento:', error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
-        <div className="grid grid-cols-2 gap-4 text-sm">
-          <div className="flex items-center space-x-2">
-            <Calendar className="h-4 w-4 text-gray-500" />
-            <span className="text-gray-600">
-              {formData.date ? new Date(formData.date).toLocaleDateString('pt-BR') : 'Data não definida'}
-            </span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <MapPin className="h-4 w-4 text-gray-500" />
-            <span className="text-gray-600">{formData.location || 'Local não definido'}</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Users className="h-4 w-4 text-gray-500" />
-            <span className="text-gray-600">
-              Capacidade: {formData.capacity || '0'} pessoas
-            </span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Tag className="h-4 w-4 text-gray-500" />
-            <span className="text-gray-600">
-              {formData.isFree ? 'Gratuito' : formData.price || 'Preço não definido'}
-            </span>
-          </div>
-        </div>
+  const renderStepContent = () => {
+    switch (currentStep) {
+      case 1:
+        return (
+          <div className="space-y-6">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                Título do Evento *
+              </label>
+              <input
+                type="text"
+                value={formData.title}
+                onChange={(e) => handleInputChange('title', e.target.value)}
+                className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                  errors.title ? 'border-red-500' : 'border-slate-300 dark:border-slate-600'
+                } bg-white dark:bg-slate-700 text-slate-900 dark:text-white`}
+                placeholder="Ex: Tech Conference 2024"
+              />
+              {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title}</p>}
+            </div>
 
-        {formData.category && (
-          <div>
-            <span className="inline-block bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded-full">
-              {formData.category}
-            </span>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                Descrição *
+              </label>
+              <textarea
+                value={formData.description}
+                onChange={(e) => handleInputChange('description', e.target.value)}
+                rows={6}
+                className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                  errors.description ? 'border-red-500' : 'border-slate-300 dark:border-slate-600'
+                } bg-white dark:bg-slate-700 text-slate-900 dark:text-white`}
+                placeholder="Descreva seu evento em detalhes..."
+              />
+              <div className="flex justify-between text-sm text-slate-500 mt-1">
+                <span>{formData.description.length}/1000 caracteres</span>
+                {errors.description && <span className="text-red-500">{errors.description}</span>}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  Categoria
+                </label>
+                <select
+                  value={formData.category}
+                  onChange={(e) => handleInputChange('category', e.target.value)}
+                  className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
+                >
+                  {categories.map((category) => (
+                    <option key={category.value} value={category.value}>
+                      {category.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  Tags
+                </label>
+                <div className="flex flex-wrap gap-2 mb-2">
+                  {formData.tags.map((tag, index) => (
+                    <span
+                      key={index}
+                      className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+                    >
+                      {tag}
+                      <button
+                        onClick={() => removeTag(tag)}
+                        className="ml-1 text-blue-600 hover:text-blue-800"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+                <div className="flex">
+                  <input
+                    type="text"
+                    placeholder="Adicionar tag..."
+                    className="flex-1 p-2 border border-slate-300 dark:border-slate-600 rounded-l-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        addTag(e.target.value);
+                        e.target.value = '';
+                      }
+                    }}
+                  />
+                  <button
+                    onClick={() => {
+                      const input = document.querySelector('input[placeholder="Adicionar tag..."]');
+                      if (input.value) {
+                        addTag(input.value);
+                        input.value = '';
+                      }
+                    }}
+                    className="px-3 py-2 bg-blue-600 text-white rounded-r-lg hover:bg-blue-700"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
-        )}
-      </div>
-    </div>
-  );
+        );
+
+      case 2:
+        return (
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  Data do Evento *
+                </label>
+                <input
+                  type="date"
+                  value={formData.date}
+                  onChange={(e) => handleInputChange('date', e.target.value)}
+                  className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                    errors.date ? 'border-red-500' : 'border-slate-300 dark:border-slate-600'
+                  } bg-white dark:bg-slate-700 text-slate-900 dark:text-white`}
+                />
+                {errors.date && <p className="text-red-500 text-sm mt-1">{errors.date}</p>}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  Horário de Início *
+                </label>
+                <input
+                  type="time"
+                  value={formData.time}
+                  onChange={(e) => handleInputChange('time', e.target.value)}
+                  className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                    errors.time ? 'border-red-500' : 'border-slate-300 dark:border-slate-600'
+                  } bg-white dark:bg-slate-700 text-slate-900 dark:text-white`}
+                />
+                {errors.time && <p className="text-red-500 text-sm mt-1">{errors.time}</p>}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  Horário de Término
+                </label>
+                <input
+                  type="time"
+                  value={formData.endTime}
+                  onChange={(e) => handleInputChange('endTime', e.target.value)}
+                  className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  Máximo de Participantes
+                </label>
+                <input
+                  type="number"
+                  value={formData.maxParticipants}
+                  onChange={(e) => handleInputChange('maxParticipants', parseInt(e.target.value))}
+                  min="1"
+                  className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                    errors.maxParticipants ? 'border-red-500' : 'border-slate-300 dark:border-slate-600'
+                  } bg-white dark:bg-slate-700 text-slate-900 dark:text-white`}
+                />
+                {errors.maxParticipants && <p className="text-red-500 text-sm mt-1">{errors.maxParticipants}</p>}
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex items-center space-x-4">
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={formData.isOnline}
+                    onChange={(e) => handleInputChange('isOnline', e.target.checked)}
+                    className="mr-2"
+                  />
+                  <span className="text-sm text-slate-700 dark:text-slate-300">Evento Online</span>
+                </label>
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={formData.isHybrid}
+                    onChange={(e) => handleInputChange('isHybrid', e.target.checked)}
+                    className="mr-2"
+                  />
+                  <span className="text-sm text-slate-700 dark:text-slate-300">Evento Híbrido</span>
+                </label>
+              </div>
+
+              {formData.isOnline && (
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                    URL do Evento Online *
+                  </label>
+                  <input
+                    type="url"
+                    value={formData.onlineUrl}
+                    onChange={(e) => handleInputChange('onlineUrl', e.target.value)}
+                    className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                      errors.onlineUrl ? 'border-red-500' : 'border-slate-300 dark:border-slate-600'
+                    } bg-white dark:bg-slate-700 text-slate-900 dark:text-white`}
+                    placeholder="https://meet.google.com/..."
+                  />
+                  {errors.onlineUrl && <p className="text-red-500 text-sm mt-1">{errors.onlineUrl}</p>}
+                </div>
+              )}
+
+              {!formData.isOnline && (
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                      Nome do Local *
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.location}
+                      onChange={(e) => handleInputChange('location', e.target.value)}
+                      className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                        errors.location ? 'border-red-500' : 'border-slate-300 dark:border-slate-600'
+                      } bg-white dark:bg-slate-700 text-slate-900 dark:text-white`}
+                      placeholder="Ex: Centro de Convenções"
+                    />
+                    {errors.location && <p className="text-red-500 text-sm mt-1">{errors.location}</p>}
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <input
+                      type="text"
+                      value={formData.address}
+                      onChange={(e) => handleInputChange('address', e.target.value)}
+                      className="p-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
+                      placeholder="Endereço"
+                    />
+                    <input
+                      type="text"
+                      value={formData.city}
+                      onChange={(e) => handleInputChange('city', e.target.value)}
+                      className="p-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
+                      placeholder="Cidade"
+                    />
+                    <input
+                      type="text"
+                      value={formData.state}
+                      onChange={(e) => handleInputChange('state', e.target.value)}
+                      className="p-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
+                      placeholder="Estado"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+
+      case 3:
+        return (
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  Preço do Ingresso
+                </label>
+                <div className="flex">
+                  <select
+                    value={formData.currency}
+                    onChange={(e) => handleInputChange('currency', e.target.value)}
+                    className="p-3 border border-r-0 border-slate-300 dark:border-slate-600 rounded-l-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
+                  >
+                    {currencies.map((currency) => (
+                      <option key={currency.code} value={currency.code}>
+                        {currency.symbol} {currency.name}
+                      </option>
+                    ))}
+                  </select>
+                  <input
+                    type="number"
+                    value={formData.price}
+                    onChange={(e) => handleInputChange('price', parseFloat(e.target.value))}
+                    min="0"
+                    step="0.01"
+                    className={`flex-1 p-3 border rounded-r-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                      errors.price ? 'border-red-500' : 'border-slate-300 dark:border-slate-600'
+                    } bg-white dark:bg-slate-700 text-slate-900 dark:text-white`}
+                    placeholder="0.00"
+                  />
+                </div>
+                {errors.price && <p className="text-red-500 text-sm mt-1">{errors.price}</p>}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  Gratuito
+                </label>
+                <div className="flex items-center space-x-4">
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      name="free"
+                      checked={formData.price === 0}
+                      onChange={() => handleInputChange('price', 0)}
+                      className="mr-2"
+                    />
+                    <span className="text-sm text-slate-700 dark:text-slate-300">Sim</span>
+                  </label>
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      name="free"
+                      checked={formData.price > 0}
+                      onChange={() => handleInputChange('price', 10)}
+                      className="mr-2"
+                    />
+                    <span className="text-sm text-slate-700 dark:text-slate-300">Não</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <h4 className="text-lg font-semibold text-slate-900 dark:text-white">Configurações Avançadas</h4>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-3">
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={formData.settings.allowWaitlist}
+                      onChange={(e) => handleSettingsChange('allowWaitlist', e.target.checked)}
+                      className="mr-2"
+                    />
+                    <span className="text-sm text-slate-700 dark:text-slate-300">Permitir Lista de Espera</span>
+                  </label>
+                  
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={formData.settings.requireApproval}
+                      onChange={(e) => handleSettingsChange('requireApproval', e.target.checked)}
+                      className="mr-2"
+                    />
+                    <span className="text-sm text-slate-700 dark:text-slate-300">Requer Aprovação</span>
+                  </label>
+                  
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={formData.settings.allowCancellation}
+                      onChange={(e) => handleSettingsChange('allowCancellation', e.target.checked)}
+                      className="mr-2"
+                    />
+                    <span className="text-sm text-slate-700 dark:text-slate-300">Permitir Cancelamento</span>
+                  </label>
+                  
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={formData.settings.allowTransfers}
+                      onChange={(e) => handleSettingsChange('allowTransfers', e.target.checked)}
+                      className="mr-2"
+                    />
+                    <span className="text-sm text-slate-700 dark:text-slate-300">Permitir Transferências</span>
+                  </label>
+                </div>
+                
+                <div className="space-y-3">
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={formData.settings.requirePayment}
+                      onChange={(e) => handleSettingsChange('requirePayment', e.target.checked)}
+                      className="mr-2"
+                    />
+                    <span className="text-sm text-slate-700 dark:text-slate-300">Requer Pagamento</span>
+                  </label>
+                  
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={formData.settings.allowPartialPayment}
+                      onChange={(e) => handleSettingsChange('allowPartialPayment', e.target.checked)}
+                      className="mr-2"
+                    />
+                    <span className="text-sm text-slate-700 dark:text-slate-300">Permitir Pagamento Parcial</span>
+                  </label>
+                  
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={formData.settings.enableQRCode}
+                      onChange={(e) => handleSettingsChange('enableQRCode', e.target.checked)}
+                      className="mr-2"
+                    />
+                    <span className="text-sm text-slate-700 dark:text-slate-300">Gerar QR Code</span>
+                  </label>
+                  
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={formData.settings.enableAnalytics}
+                      onChange={(e) => handleSettingsChange('enableAnalytics', e.target.checked)}
+                      className="mr-2"
+                    />
+                    <span className="text-sm text-slate-700 dark:text-slate-300">Habilitar Analytics</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 4:
+        return (
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  Imagem Principal
+                </label>
+                <div className="border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-lg p-6 text-center">
+                  {imagePreview ? (
+                    <div className="relative">
+                      <img
+                        src={imagePreview}
+                        alt="Preview"
+                        className="w-full h-48 object-cover rounded-lg"
+                      />
+                      <button
+                        onClick={() => {
+                          setFormData(prev => ({ ...prev, image: null }));
+                          setImagePreview(null);
+                        }}
+                        className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div>
+                      <ImageIcon className="w-12 h-12 text-slate-400 mx-auto mb-2" />
+                      <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">
+                        Clique para fazer upload da imagem
+                      </p>
+                      <button
+                        onClick={() => fileInputRef.current?.click()}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                      >
+                        Selecionar Imagem
+                      </button>
+                    </div>
+                  )}
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => handleImageUpload(e, 'image')}
+                    className="hidden"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  Imagem de Capa
+                </label>
+                <div className="border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-lg p-6 text-center">
+                  {coverPreview ? (
+                    <div className="relative">
+                      <img
+                        src={coverPreview}
+                        alt="Cover Preview"
+                        className="w-full h-48 object-cover rounded-lg"
+                      />
+                      <button
+                        onClick={() => {
+                          setFormData(prev => ({ ...prev, coverImage: null }));
+                          setCoverPreview(null);
+                        }}
+                        className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div>
+                      <ImageIcon className="w-12 h-12 text-slate-400 mx-auto mb-2" />
+                      <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">
+                        Clique para fazer upload da capa
+                      </p>
+                      <button
+                        onClick={() => coverInputRef.current?.click()}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                      >
+                        Selecionar Capa
+                      </button>
+                    </div>
+                  )}
+                  <input
+                    ref={coverInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => handleImageUpload(e, 'cover')}
+                    className="hidden"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-lg">
+              <h4 className="font-medium text-slate-900 dark:text-white mb-2">Dicas para Imagens</h4>
+              <ul className="text-sm text-slate-600 dark:text-slate-400 space-y-1">
+                <li>• Imagem principal: 800x600px ou proporção 4:3</li>
+                <li>• Imagem de capa: 1200x400px ou proporção 3:1</li>
+                <li>• Formatos aceitos: JPG, PNG, WebP</li>
+                <li>• Tamanho máximo: 5MB por imagem</li>
+                <li>• Use imagens de alta qualidade para melhor apresentação</li>
+              </ul>
+            </div>
+          </div>
+        );
+
+      case 5:
+        return (
+          <div className="space-y-6">
+            <div className="bg-slate-50 dark:bg-slate-800 p-6 rounded-lg">
+              <h4 className="font-semibold text-slate-900 dark:text-white mb-4">Resumo do Evento</h4>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <h5 className="font-medium text-slate-700 dark:text-slate-300 mb-2">Informações Básicas</h5>
+                  <div className="space-y-2 text-sm">
+                    <p><span className="font-medium">Título:</span> {formData.title}</p>
+                    <p><span className="font-medium">Categoria:</span> {categories.find(c => c.value === formData.category)?.label}</p>
+                    <p><span className="font-medium">Tags:</span> {formData.tags.join(', ') || 'Nenhuma'}</p>
+                  </div>
+                </div>
+                
+                <div>
+                  <h5 className="font-medium text-slate-700 dark:text-slate-300 mb-2">Data e Local</h5>
+                  <div className="space-y-2 text-sm">
+                    <p><span className="font-medium">Data:</span> {formData.date}</p>
+                    <p><span className="font-medium">Horário:</span> {formData.time} - {formData.endTime || 'Não definido'}</p>
+                    <p><span className="font-medium">Tipo:</span> {formData.isOnline ? 'Online' : formData.isHybrid ? 'Híbrido' : 'Presencial'}</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="mt-4">
+                <h5 className="font-medium text-slate-700 dark:text-slate-300 mb-2">Descrição</h5>
+                <p className="text-sm text-slate-600 dark:text-slate-400">{formData.description}</p>
+              </div>
+              
+              <div className="mt-4">
+                <h5 className="font-medium text-slate-700 dark:text-slate-300 mb-2">Configurações</h5>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
+                  <p>• Máximo: {formData.maxParticipants} participantes</p>
+                  <p>• Preço: {formData.price === 0 ? 'Gratuito' : `${formData.currency} ${formData.price}`}</p>
+                  <p>• QR Code: {formData.settings.enableQRCode ? 'Sim' : 'Não'}</p>
+                  <p>• Analytics: {formData.settings.enableAnalytics ? 'Sim' : 'Não'}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+
+      default:
+        return null;
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+      <div className="container mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="mb-8">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <button
-                onClick={() => router.back()}
-                className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </button>
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900">Criar Evento</h1>
-                <p className="mt-2 text-gray-600">Configure todos os detalhes do seu evento</p>
-              </div>
+            <div>
+              <h1 className="text-4xl font-bold text-slate-900 dark:text-white mb-2">
+                Criar Novo Evento
+              </h1>
+              <p className="text-lg text-slate-600 dark:text-slate-300">
+                Configure todos os detalhes do seu evento
+              </p>
             </div>
             
             <div className="flex items-center space-x-3">
               <button
-                onClick={() => setIsPreview(!isPreview)}
-                className="btn-secondary"
+                onClick={() => setIsPreviewMode(!isPreviewMode)}
+                className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
+                  isPreviewMode
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600'
+                }`}
               >
-                <Eye className="h-4 w-4 mr-2" />
-                {isPreview ? 'Ocultar Prévia' : 'Ver Prévia'}
+                <Eye className="w-4 h-4" />
+                <span>{isPreviewMode ? 'Editar' : 'Preview'}</span>
               </button>
+              
               <button
                 onClick={handleSubmit}
-                className="btn-primary"
+                disabled={isSaving}
+                className="flex items-center space-x-2 bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white px-6 py-2 rounded-lg font-medium transition-colors"
               >
-                <Save className="h-4 w-4 mr-2" />
-                Salvar Evento
+                {isSaving ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    <span>Salvando...</span>
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-4 h-4" />
+                    <span>Criar Evento</span>
+                  </>
+                )}
               </button>
             </div>
           </div>
         </div>
-      </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid lg:grid-cols-2 gap-8">
-          {/* Formulário */}
-          <div className="space-y-6">
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Informações Básicas */}
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Informações Básicas</h3>
-                
-                <div className="space-y-4">
-                  <div>
-                    <label className="form-label">Título do Evento *</label>
-                    <input
-                      type="text"
-                      name="title"
-                      value={formData.title}
-                      onChange={handleInputChange}
-                      required
-                      className="input-field"
-                      placeholder="Ex: Workshop de Desenvolvimento Web"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="form-label">Descrição *</label>
-                    <textarea
-                      name="description"
-                      value={formData.description}
-                      onChange={handleInputChange}
-                      required
-                      rows={4}
-                      className="input-field"
-                      placeholder="Descreva detalhadamente o seu evento..."
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="form-label">Categoria *</label>
-                      <select
-                        name="category"
-                        value={formData.category}
-                        onChange={handleInputChange}
-                        required
-                        className="input-field"
-                      >
-                        <option value="">Selecione uma categoria</option>
-                        {categories.map((category) => (
-                          <option key={category} value={category}>{category}</option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="form-label">Tags</label>
-                      <input
-                        type="text"
-                        name="tags"
-                        value={formData.tags}
-                        onChange={handleInputChange}
-                        className="input-field"
-                        placeholder="Ex: tecnologia, web, react"
-                      />
-                    </div>
-                  </div>
+        {/* Progress Steps */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between">
+            {steps.map((step, index) => (
+              <div key={step.id} className="flex items-center">
+                <div className={`flex items-center justify-center w-10 h-10 rounded-full border-2 ${
+                  currentStep >= step.id
+                    ? 'bg-blue-600 border-blue-600 text-white'
+                    : 'border-slate-300 dark:border-slate-600 text-slate-500 dark:text-slate-400'
+                }`}>
+                  {currentStep > step.id ? (
+                    <span className="text-white">✓</span>
+                  ) : (
+                    <step.icon className="w-5 h-5" />
+                  )}
                 </div>
+                <span className={`ml-2 text-sm font-medium ${
+                  currentStep >= step.id
+                    ? 'text-blue-600 dark:text-blue-400'
+                    : 'text-slate-500 dark:text-slate-400'
+                }`}>
+                  {step.title}
+                </span>
+                {index < steps.length - 1 && (
+                  <div className={`w-16 h-0.5 mx-4 ${
+                    currentStep > step.id ? 'bg-blue-600' : 'bg-slate-300 dark:bg-slate-600'
+                  }`} />
+                )}
               </div>
-
-              {/* Data e Local */}
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Data e Local</h3>
-                
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="form-label">Data *</label>
-                      <input
-                        type="date"
-                        name="date"
-                        value={formData.date}
-                        onChange={handleInputChange}
-                        required
-                        className="input-field"
-                      />
-                    </div>
-                    <div>
-                      <label className="form-label">Horário *</label>
-                      <input
-                        type="time"
-                        name="time"
-                        value={formData.time}
-                        onChange={handleInputChange}
-                        required
-                        className="input-field"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="form-label">Duração (horas)</label>
-                      <input
-                        type="number"
-                        name="duration"
-                        value={formData.duration}
-                        onChange={handleInputChange}
-                        min="0.5"
-                        step="0.5"
-                        className="input-field"
-                        placeholder="2.5"
-                      />
-                    </div>
-                    <div>
-                      <label className="form-label">Local *</label>
-                      <input
-                        type="text"
-                        name="location"
-                        value={formData.location}
-                        onChange={handleInputChange}
-                        required
-                        className="input-field"
-                        placeholder="Ex: Centro de Inovação"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Capacidade e Preço */}
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Capacidade e Preço</h3>
-                
-                <div className="space-y-4">
-                  <div>
-                    <label className="form-label">Capacidade Máxima *</label>
-                    <input
-                      type="number"
-                      name="capacity"
-                      value={formData.capacity}
-                      onChange={handleInputChange}
-                      required
-                      min="1"
-                      className="input-field"
-                      placeholder="50"
-                    />
-                  </div>
-
-                  <div className="space-y-3">
-                    <div className="flex items-center">
-                      <input
-                        type="checkbox"
-                        name="isFree"
-                        checked={formData.isFree}
-                        onChange={handleInputChange}
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                      />
-                      <label className="ml-2 text-sm text-gray-700">Evento gratuito</label>
-                    </div>
-
-                    {!formData.isFree && (
-                      <div>
-                        <label className="form-label">Preço</label>
-                        <input
-                          type="text"
-                          name="price"
-                          value={formData.price}
-                          onChange={handleInputChange}
-                          className="input-field"
-                          placeholder="Ex: R$ 150,00"
-                        />
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Imagem e Requisitos */}
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Imagem e Requisitos</h3>
-                
-                <div className="space-y-4">
-                  <div>
-                    <label className="form-label">Imagem do Evento</label>
-                    <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg">
-                      <div className="space-y-1 text-center">
-                        <ImageIcon className="mx-auto h-12 w-12 text-gray-400" />
-                        <div className="flex text-sm text-gray-600">
-                          <label className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500">
-                            <span>Upload de arquivo</span>
-                            <input
-                              type="file"
-                              name="image"
-                              onChange={handleImageChange}
-                              className="sr-only"
-                              accept="image/*"
-                            />
-                          </label>
-                          <p className="pl-1">ou arraste e solte</p>
-                        </div>
-                        <p className="text-xs text-gray-500">PNG, JPG, GIF até 10MB</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="form-label">Requisitos</label>
-                    <textarea
-                      name="requirements"
-                      value={formData.requirements}
-                      onChange={handleInputChange}
-                      rows={3}
-                      className="input-field"
-                      placeholder="Ex: Conhecimentos básicos de programação, trazer notebook..."
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Contato */}
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Informações de Contato</h3>
-                
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="form-label">Email de Contato</label>
-                      <input
-                        type="email"
-                        name="contactEmail"
-                        value={formData.contactEmail}
-                        onChange={handleInputChange}
-                        className="input-field"
-                        placeholder="contato@evento.com"
-                      />
-                    </div>
-                    <div>
-                      <label className="form-label">Telefone de Contato</label>
-                      <input
-                        type="tel"
-                        name="contactPhone"
-                        value={formData.contactPhone}
-                        onChange={handleInputChange}
-                        className="input-field"
-                        placeholder="(11) 99999-9999"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </form>
+            ))}
           </div>
+        </div>
 
-          {/* Prévia ou Informações */}
-          <div className="space-y-6">
-            {isPreview ? (
-              <EventPreview />
-            ) : (
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Dicas para um Evento de Sucesso</h3>
-                <div className="space-y-4 text-sm text-gray-600">
-                  <div className="flex items-start space-x-3">
-                    <div className="w-2 h-2 bg-blue-600 rounded-full mt-2"></div>
-                    <p>Use um título claro e atrativo que explique o que os participantes aprenderão</p>
-                  </div>
-                  <div className="flex items-start space-x-3">
-                    <div className="w-2 h-2 bg-blue-600 rounded-full mt-2"></div>
-                    <p>Inclua uma descrição detalhada com benefícios e resultados esperados</p>
-                  </div>
-                  <div className="flex items-start space-x-3">
-                    <div className="w-2 h-2 bg-blue-600 rounded-full mt-2"></div>
-                    <p>Escolha uma data e horário que sejam convenientes para seu público-alvo</p>
-                  </div>
-                  <div className="flex items-start space-x-3">
-                    <div className="w-2 h-2 bg-blue-600 rounded-full mt-2"></div>
-                    <p>Defina uma capacidade realista baseada no local e recursos disponíveis</p>
-                  </div>
-                  <div className="flex items-start space-x-3">
-                    <div className="w-2 h-2 bg-blue-600 rounded-full mt-2"></div>
-                    <p>Adicione uma imagem de qualidade para aumentar o engajamento</p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Estatísticas */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Progresso</h3>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Informações Básicas</span>
-                  <span className={`text-sm ${formData.title && formData.description && formData.category ? 'text-green-600' : 'text-gray-400'}`}>
-                    {formData.title && formData.description && formData.category ? '✓' : '○'}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Data e Local</span>
-                  <span className={`text-sm ${formData.date && formData.time && formData.location ? 'text-green-600' : 'text-gray-400'}`}>
-                    {formData.date && formData.time && formData.location ? '✓' : '○'}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Capacidade</span>
-                  <span className={`text-sm ${formData.capacity ? 'text-green-600' : 'text-gray-400'}`}>
-                    {formData.capacity ? '✓' : '○'}
-                  </span>
-                </div>
-              </div>
+        {/* Main Content */}
+        <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg p-8 border border-slate-200 dark:border-slate-700">
+          {renderStepContent()}
+          
+          {/* Navigation */}
+          <div className="flex items-center justify-between mt-8 pt-6 border-t border-slate-200 dark:border-slate-700">
+            <button
+              onClick={prevStep}
+              disabled={currentStep === 1}
+              className="flex items-center space-x-2 px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              <span>Anterior</span>
+            </button>
+            
+            <div className="text-sm text-slate-500 dark:text-slate-400">
+              Passo {currentStep} de {steps.length}
             </div>
+            
+            {currentStep < steps.length ? (
+              <button
+                onClick={nextStep}
+                className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors"
+              >
+                <span>Próximo</span>
+              </button>
+            ) : (
+              <button
+                onClick={handleSubmit}
+                disabled={isSaving}
+                className="flex items-center space-x-2 bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white px-6 py-2 rounded-lg font-medium transition-colors"
+              >
+                {isSaving ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    <span>Salvando...</span>
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-4 h-4" />
+                    <span>Criar Evento</span>
+                  </>
+                )}
+              </button>
+            )}
           </div>
         </div>
       </div>
