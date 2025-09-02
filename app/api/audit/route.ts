@@ -176,7 +176,7 @@ const complianceRules = [
 ];
 
 // GET /api/audit - Obter logs de auditoria
-export async function GET(request: NextRequest) {
+export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
     const { searchParams } = new URL(request.url);
     const organizationId = searchParams.get('organizationId');
@@ -189,44 +189,23 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '50');
     const offset = parseInt(searchParams.get('offset') || '0');
 
-    let filteredLogs = auditLogs;
+    const filteredLogs = auditLogs.filter(log => {
+      const matchesOrganization = !organizationId || log.organizationId === organizationId;
+      const matchesUser = !userId || log.userId === userId;
+      const matchesAction = !action || log.action.includes(action);
+      const matchesResource = !resource || log.resource === resource;
+      const matchesSeverity = !severity || log.severity === severity;
+      const matchesStartDate = !startDate || log.timestamp >= startDate;
+      const matchesEndDate = !endDate || log.timestamp <= endDate;
+      
+      return matchesOrganization && matchesUser && matchesAction && 
+             matchesResource && matchesSeverity && matchesStartDate && matchesEndDate;
+    });
 
-    // Aplicar filtros
-    if (organizationId) {
-      filteredLogs = filteredLogs.filter(log => log.organizationId === organizationId);
-    }
-
-    if (userId) {
-      filteredLogs = filteredLogs.filter(log => log.userId === userId);
-    }
-
-    if (action) {
-      filteredLogs = filteredLogs.filter(log => log.action.includes(action));
-    }
-
-    if (resource) {
-      filteredLogs = filteredLogs.filter(log => log.resource === resource);
-    }
-
-    if (severity) {
-      filteredLogs = filteredLogs.filter(log => log.severity === severity);
-    }
-
-    if (startDate) {
-      filteredLogs = filteredLogs.filter(log => log.timestamp >= startDate);
-    }
-
-    if (endDate) {
-      filteredLogs = filteredLogs.filter(log => log.timestamp <= endDate);
-    }
-
-    // Ordenar por timestamp (mais recente primeiro)
     filteredLogs.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
-    // Paginação
     const paginatedLogs = filteredLogs.slice(offset, offset + limit);
 
-    // Estatísticas
     const stats = {
       total: filteredLogs.length,
       bySeverity: {

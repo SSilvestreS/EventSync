@@ -78,25 +78,17 @@ const ssoUsers = [
 ];
 
 // GET /api/sso - Listar configurações SSO
-export async function GET(request: NextRequest) {
+export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
     const { searchParams } = new URL(request.url);
     const organizationId = searchParams.get('organizationId');
     const provider = searchParams.get('provider');
 
-    let filteredConfigs = ssoConfigurations;
-
-    if (organizationId) {
-      filteredConfigs = filteredConfigs.filter(config => 
-        config.organizationId === organizationId
-      );
-    }
-
-    if (provider) {
-      filteredConfigs = filteredConfigs.filter(config => 
-        config.provider === provider
-      );
-    }
+    const filteredConfigs = ssoConfigurations.filter(config => {
+      const matchesOrganization = !organizationId || config.organizationId === organizationId;
+      const matchesProvider = !provider || config.provider === provider;
+      return matchesOrganization && matchesProvider;
+    });
 
     return NextResponse.json({
       success: true,
@@ -116,12 +108,11 @@ export async function GET(request: NextRequest) {
 }
 
 // POST /api/sso - Criar nova configuração SSO
-export async function POST(request: NextRequest) {
+export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     const body = await request.json();
     const validatedData = SSOConfigSchema.parse(body);
 
-    // Simular criação de configuração SSO
     const newConfig = {
       id: Date.now().toString(),
       ...validatedData,

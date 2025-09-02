@@ -102,7 +102,7 @@ const executiveReports = [
 ];
 
 // GET /api/bi - Obter métricas de BI
-export async function GET(request: NextRequest) {
+export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
     const { searchParams } = new URL(request.url);
     const organizationId = searchParams.get('organizationId');
@@ -110,7 +110,6 @@ export async function GET(request: NextRequest) {
     const reportId = searchParams.get('reportId');
 
     if (reportId) {
-      // Retornar relatório específico
       const report = executiveReports.find(r => r.id === reportId);
       if (!report) {
         return NextResponse.json(
@@ -121,19 +120,14 @@ export async function GET(request: NextRequest) {
 
       return NextResponse.json({
         success: true,
-        data: {
-          report,
-          metrics: biMetrics
-        }
+        data: { report, metrics: biMetrics }
       });
     }
 
     if (type === 'reports') {
-      // Retornar lista de relatórios
-      let filteredReports = executiveReports;
-      if (organizationId) {
-        filteredReports = filteredReports.filter(r => r.organizationId === organizationId);
-      }
+      const filteredReports = organizationId 
+        ? executiveReports.filter(r => r.organizationId === organizationId)
+        : executiveReports;
 
       return NextResponse.json({
         success: true,
@@ -145,18 +139,13 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Retornar métricas gerais
-    let filteredMetrics = biMetrics;
-    if (organizationId) {
-      // Simular filtragem por organização
-      filteredMetrics = {
-        ...biMetrics,
-        revenue: {
-          ...biMetrics.revenue,
-          total: biMetrics.revenue.total * 0.6 // Simular dados específicos da organização
-        }
-      };
-    }
+    const filteredMetrics = organizationId ? {
+      ...biMetrics,
+      revenue: {
+        ...biMetrics.revenue,
+        total: biMetrics.revenue.total * 0.6
+      }
+    } : biMetrics;
 
     return NextResponse.json({
       success: true,

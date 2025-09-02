@@ -101,22 +101,24 @@ export default function EnterprisePage() {
     });
   }, []);
 
-  const getPlanColor = (plan: string) => {
-    switch (plan) {
-      case 'enterprise': return 'text-purple-600 bg-purple-100';
-      case 'professional': return 'text-blue-600 bg-blue-100';
-      case 'starter': return 'text-green-600 bg-green-100';
-      default: return 'text-gray-600 bg-gray-100';
-    }
+  const getPlanColor = (plan: string): string => {
+    const planColors = {
+      enterprise: 'text-purple-600 bg-purple-100',
+      professional: 'text-blue-600 bg-blue-100',
+      starter: 'text-green-600 bg-green-100'
+    };
+    
+    return planColors[plan as keyof typeof planColors] || 'text-gray-600 bg-gray-100';
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active': return 'text-green-600 bg-green-100';
-      case 'suspended': return 'text-red-600 bg-red-100';
-      case 'trial': return 'text-yellow-600 bg-yellow-100';
-      default: return 'text-gray-600 bg-gray-100';
-    }
+  const getStatusColor = (status: string): string => {
+    const statusColors = {
+      active: 'text-green-600 bg-green-100',
+      suspended: 'text-red-600 bg-red-100',
+      trial: 'text-yellow-600 bg-yellow-100'
+    };
+    
+    return statusColors[status as keyof typeof statusColors] || 'text-gray-600 bg-gray-100';
   };
 
   const tabs = [

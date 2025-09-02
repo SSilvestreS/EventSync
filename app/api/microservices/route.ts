@@ -189,33 +189,23 @@ const deployments = [
 ];
 
 // GET /api/microservices - Listar serviços
-export async function GET(request: NextRequest) {
+export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
     const { searchParams } = new URL(request.url);
     const environment = searchParams.get('environment');
     const status = searchParams.get('status');
     const includeMetrics = searchParams.get('includeMetrics') === 'true';
 
-    let filteredServices = services;
+    const filteredServices = services.filter(service => {
+      const matchesEnvironment = !environment || service.environment === environment;
+      const matchesStatus = !status || service.status === status;
+      return matchesEnvironment && matchesStatus;
+    });
 
-    if (environment) {
-      filteredServices = filteredServices.filter(service => 
-        service.environment === environment
-      );
-    }
+    const processedServices = includeMetrics 
+      ? filteredServices 
+      : filteredServices.map(({ metrics, ...service }) => service);
 
-    if (status) {
-      filteredServices = filteredServices.filter(service => 
-        service.status === status
-      );
-    }
-
-    // Remover métricas se não solicitado
-    if (!includeMetrics) {
-      filteredServices = filteredServices.map(({ metrics, ...service }) => service);
-    }
-
-    // Calcular estatísticas gerais
     const stats = {
       total: services.length,
       healthy: services.filter(s => s.status === 'healthy').length,
@@ -227,7 +217,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      data: filteredServices,
+      data: processedServices,
       meta: {
         stats,
         environment: environment || 'all',
