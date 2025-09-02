@@ -11,33 +11,37 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  password  String?
-  role      Role     @default(ATTENDEE)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id             String   @id @default(cuid())
+  email          String   @unique
+  name           String?
+  password       String?
+  role           Role     @default(ATTENDEE)
+  organizationId String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   // Relações
-  registrations Registration[]
+  registrations  Registration[]
+  organization   Organization? @relation(fields: [organizationId], references: [id])
 
   @@map("users")
 }
 
 model Event {
-  id          String   @id @default(cuid())
-  title       String
-  description String?
-  date        DateTime
-  location    String?
-  capacity    Int?
-  status      EventStatus @default(DRAFT)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id             String   @id @default(cuid())
+  title          String
+  description    String?
+  date           DateTime
+  location       String?
+  capacity       Int?
+  status         EventStatus @default(DRAFT)
+  organizationId String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   // Relações
-  registrations Registration[]
+  registrations  Registration[]
+  organization   Organization? @relation(fields: [organizationId], references: [id])
 
   @@map("events")
 }
@@ -76,4 +80,214 @@ enum RegistrationStatus {
   CONFIRMED
   CANCELLED
   ATTENDED
+}
+
+// ===== MODELOS ENTERPRISE v2.0 =====
+
+model Organization {
+  id          String   @id @default(cuid())
+  name        String
+  domain      String?  @unique
+  plan        PlanType @default(STARTER)
+  status      OrgStatus @default(ACTIVE)
+  settings    Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relações
+  users       User[]
+  events      Event[]
+  ssoConfigs  SSOConfig[]
+  auditLogs   AuditLog[]
+  complianceRules ComplianceRule[]
+
+  @@map("organizations")
+}
+
+model SSOConfig {
+  id             String   @id @default(cuid())
+  organizationId String
+  provider       SSOProvider
+  name           String
+  domain         String?
+  metadata       Json
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  lastSync       DateTime?
+
+  // Relações
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@map("sso_configs")
+}
+
+model AuditLog {
+  id             String   @id @default(cuid())
+  userId         String
+  organizationId String
+  action         String
+  resource       String
+  resourceId     String?
+  details        Json?
+  ipAddress      String?
+  userAgent      String?
+  severity       LogSeverity @default(INFO)
+  timestamp      DateTime @default(now())
+
+  // Relações
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@map("audit_logs")
+}
+
+model ComplianceRule {
+  id             String   @id @default(cuid())
+  organizationId String
+  name           String
+  description    String?
+  type           ComplianceType
+  config         Json
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relações
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@map("compliance_rules")
+}
+
+model Microservice {
+  id             String   @id @default(cuid())
+  name           String   @unique
+  version        String
+  port           Int
+  healthEndpoint String?
+  status         ServiceStatus @default(HEALTHY)
+  environment    Environment @default(PRODUCTION)
+  replicas       Int      @default(1)
+  dependencies   String[]
+  resources      Json?
+  metrics        Json?
+  lastDeployment DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relações
+  deployments    ServiceDeployment[]
+
+  @@map("microservices")
+}
+
+model ServiceDeployment {
+  id          String   @id @default(cuid())
+  serviceId   String
+  version     String
+  environment Environment
+  status      DeploymentStatus @default(IN_PROGRESS)
+  strategy    DeploymentStrategy @default(ROLLING)
+  replicas    Int
+  startedAt   DateTime @default(now())
+  completedAt DateTime?
+  duration    Int? // em segundos
+
+  // Relações
+  service     Microservice @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@map("service_deployments")
+}
+
+model BIReport {
+  id             String   @id @default(cuid())
+  organizationId String
+  name           String
+  description    String?
+  type           ReportType
+  config         Json
+  schedule       Json?
+  status         ReportStatus @default(ACTIVE)
+  lastGenerated  DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@map("bi_reports")
+}
+
+// ===== ENUMS ENTERPRISE v2.0 =====
+
+enum PlanType {
+  STARTER
+  PROFESSIONAL
+  ENTERPRISE
+}
+
+enum OrgStatus {
+  ACTIVE
+  SUSPENDED
+  TRIAL
+  CANCELLED
+}
+
+enum SSOProvider {
+  SAML
+  OAUTH
+  LDAP
+  AZURE_AD
+  GOOGLE_WORKSPACE
+  OKTA
+}
+
+enum LogSeverity {
+  INFO
+  WARNING
+  ERROR
+  CRITICAL
+}
+
+enum ComplianceType {
+  DATA_RETENTION
+  ACCESS_CONTROL
+  AUDIT_TRAIL
+  ENCRYPTION
+  BACKUP
+}
+
+enum ServiceStatus {
+  HEALTHY
+  WARNING
+  ERROR
+  UNKNOWN
+}
+
+enum Environment {
+  DEVELOPMENT
+  STAGING
+  PRODUCTION
+}
+
+enum DeploymentStatus {
+  IN_PROGRESS
+  COMPLETED
+  FAILED
+  ROLLED_BACK
+}
+
+enum DeploymentStrategy {
+  ROLLING
+  BLUE_GREEN
+  CANARY
+}
+
+enum ReportType {
+  EXECUTIVE
+  OPERATIONAL
+  FINANCIAL
+  CUSTOM
+}
+
+enum ReportStatus {
+  ACTIVE
+  INACTIVE
+  SCHEDULED
 }

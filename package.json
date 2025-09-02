@@ -1,7 +1,7 @@
 {
   "name": "eventsync",
-  "version": "1.3.0",
-  "description": "Sistema de Gerenciamento de Eventos e Inscrições - Versão 1.3 (Refatorado, Otimizado e com Sistemas Avançados)",
+  "version": "2.0.0",
+  "description": "Sistema de Gerenciamento de Eventos e Inscrições - Versão 2.0 (Enterprise, Multi-tenancy, SSO, BI e Microserviços)",
   "main": "index.js",
   "scripts": {
     "dev": "next dev",
@@ -30,7 +30,13 @@
     "docker:dev:down": "docker-compose -f docker-compose.dev.yml down",
     "docker:prod": "docker-compose up --build",
     "docker:prod:down": "docker-compose down",
-    "docker:clean": "docker system prune -f && docker volume prune -f"
+    "docker:clean": "docker system prune -f && docker volume prune -f",
+    "enterprise:setup": "node scripts/setup-enterprise.js",
+    "sso:sync": "node scripts/sync-sso.js",
+    "bi:generate": "node scripts/generate-bi-reports.js",
+    "microservices:deploy": "node scripts/deploy-microservices.js",
+    "audit:export": "node scripts/export-audit-logs.js",
+    "compliance:check": "node scripts/check-compliance.js"
   },
   "dependencies": {
     "next": "^14.0.0",
@@ -102,7 +108,20 @@
     "winston": "^3.11.0",
     "winston-daily-rotate-file": "^4.7.1",
     "jest": "^29.7.0",
-    "@types/jest": "^29.5.8"
+    "@types/jest": "^29.5.8",
+    "passport": "^0.7.0",
+    "passport-saml": "^3.2.4",
+    "passport-oauth2": "^1.7.0",
+    "passport-ldapauth": "^3.0.1",
+    "xml2js": "^0.6.2",
+    "xml-crypto": "^3.2.0",
+    "node-cron": "^3.0.3",
+    "bull": "^4.12.0",
+    "redis": "^4.6.0",
+    "kubernetes-client": "^10.0.0",
+    "dockerode": "^4.0.0",
+    "prometheus-client": "^15.0.0",
+    "grafana-api": "^1.0.0"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
@@ -116,6 +135,12 @@
     "@types/crypto-js": "^4.2.1",
     "@types/lodash": "^4.14.202",
     "@types/d3": "^7.4.3",
+    "@types/passport": "^1.0.16",
+    "@types/passport-saml": "^3.0.8",
+    "@types/passport-oauth2": "^1.4.15",
+    "@types/xml2js": "^0.4.14",
+    "@types/node-cron": "^3.0.11",
+    "@types/bull": "^4.10.0",
     "typescript": "^5.0.0",
     "eslint": "^8.0.0",
     "eslint-config-next": "^14.0.0",
@@ -146,7 +171,20 @@
     "testing",
     "metrics",
     "health-checks",
-    "alerts"
+    "alerts",
+    "enterprise",
+    "multi-tenancy",
+    "sso",
+    "saml",
+    "oauth",
+    "ldap",
+    "business-intelligence",
+    "microservices",
+    "kubernetes",
+    "docker",
+    "audit",
+    "compliance",
+    "scalability"
   ],
   "author": "EventSync Team",
   "license": "MIT"
